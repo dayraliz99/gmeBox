@@ -1,0 +1,5 @@
+Django==3.0.7
+mysqlclient==1.4.6
+ipython
+django-material
+django-nested-admin
