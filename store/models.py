@@ -5,7 +5,7 @@ from people.models import Persona
 class Empresa(models.Model):
     nombre = models.CharField(
         max_length=250, verbose_name='Nombre')
-    nombre_contacto = models.CharField(
+    contacto = models.CharField(
         max_length=250, verbose_name='Contacto')
     email = models.EmailField(
         unique=True, verbose_name='Correo electrónico')
@@ -20,6 +20,8 @@ class Empresa(models.Model):
 class Proveedor(models.Model):
     nombre = models.CharField(
         max_length=250, verbose_name='Nombre')
+    contacto = models.CharField(
+        max_length=250, verbose_name='Contacto')
     email = models.EmailField(
         unique=True, verbose_name='Correo electrónico')
     telefono = models.CharField(
@@ -60,12 +62,14 @@ class OrdenMantenimiento(models.Model):
         max_digits=12, decimal_places=2, verbose_name='Monto', default=0.00)
     cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, related_name='ordenes')
+    empresa = models.ForeignKey(
+        Empresa, on_delete=models.CASCADE, related_name='ordenes')
 
 
 class DetalleOrden(models.Model):
     ESTADO = (
         ('NUEVO', 'Nuevo'),
-        ('EN_REVISION', 'EN revisión'),
+        ('EN_REVISION', 'En revisión'),
         ('REVISADO', 'Revisado'),
         ('CONFIRMADO', 'Confirmado'),
         ('Arregado', 'Arreglado'),
@@ -97,3 +101,112 @@ class RevisionTecnica(models.Model):
         Tecnico, on_delete=models.CASCADE, related_name='revisiones')
     detalle_orden = models.ForeignKey(
         DetalleOrden, on_delete=models.CASCADE, related_name='revisiones')
+
+
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=255, verbose_name='Nombre')
+    descripcion = models.TextField(verbose_name='Descripción')
+    empresa = models.ForeignKey(
+        Empresa, on_delete=models.CASCADE, related_name='categorias')
+
+
+class Producto(models.Model):
+    nombre = models.CharField(max_length=255, verbose_name='Nombre')
+    cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
+    descripcion = models.TextField(verbose_name='Descripción')
+    categoria = models.ForeignKey(
+        Categoria, on_delete=models.CASCADE, related_name='productos')
+
+
+class Precio (models.Model):
+    valor = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Precio')
+    nombre = models.CharField(max_length=255, null=True, blank=True)
+    producto = models.ForeignKey(
+        Producto, on_delete=models.CASCADE, related_name='precios')
+
+
+class Impuesto (models.Model):
+    porcentaje = models.DecimalField(
+        max_digits=2, decimal_places=2, verbose_name='Porcentaje')
+    nombre = models.CharField(max_length=255, null=True, blank=True)
+    producto = models.ForeignKey(
+        Producto, on_delete=models.CASCADE, related_name='impuestos')
+
+
+class Compra (models.Model):
+    ESTADO = (
+        ('POR_PAGAR', 'Por pagar'),
+        ('PAGADO', 'Pagado'),
+    )
+    fechaCompra = models.DateField(
+        verbose_name="Fecha de compra")
+    subtotal = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='SubTotal')
+    impuesto = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Impuesto')
+    total = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Total')
+    estado = models.CharField(
+        max_length=50,
+        choices=ESTADO,
+        default='POR_PAGAR',
+        verbose_name='Estado'
+    )
+    proveedor = models.ForeignKey(
+        Proveedor, on_delete=models.CASCADE, related_name='compras')
+
+
+class DetalleCompra (models.Model):
+    detalle = models.CharField(max_length=255, null=True, blank=True)
+    cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
+    precioUnitario = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Precio Unitario')
+    impuesto = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Impuesto')
+    total = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Total')
+    producto = models.ForeignKey(
+        Producto, on_delete=models.CASCADE, related_name='compras')
+    compra = models.ForeignKey(
+        Compra, on_delete=models.CASCADE, related_name='detalles')
+
+
+class Factura (models.Model):
+    ESTADO = (
+        ('POR_PAGAR', 'Por pagar'),
+        ('PAGADO', 'Pagado'),
+    )
+    fechaVenta = models.DateField(
+        verbose_name="Fecha de compra")
+    subtotal = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='SubTotal')
+    impuesto = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Impuesto')
+    total = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Total')
+    estado = models.CharField(
+        max_length=50,
+        choices=ESTADO,
+        default='POR_PAGAR',
+        verbose_name='Estado'
+    )
+    empresa = models.ForeignKey(
+        Empresa, on_delete=models.CASCADE, related_name='facturas')
+    cliente = models.ForeignKey(
+        Cliente, on_delete=models.CASCADE, related_name='facturas')
+
+
+class DetalleFactura (models.Model):
+    detalle = models.CharField(max_length=255, null=True, blank=True)
+    cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
+    precioUnitario = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Precio Unitario')
+    impuesto = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Impuesto')
+    total = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Total')
+    producto = models.ForeignKey(
+        Producto, on_delete=models.CASCADE, related_name='ventas')
+    factura = models.ForeignKey(
+        Factura, on_delete=models.CASCADE, related_name='detalles')
