@@ -16,6 +16,9 @@ class Empresa(models.Model):
     direccion = models.CharField(
         max_length=250, verbose_name='Dirección', null=True, blank=True)
 
+    def __str__(self):
+        return self.nombre
+
 
 class Proveedor(models.Model):
     nombre = models.CharField(
@@ -30,6 +33,9 @@ class Proveedor(models.Model):
         max_length=250, verbose_name='Celular', null=True, blank=True)
     direccion = models.CharField(
         max_length=250, verbose_name='Dirección', null=True, blank=True)
+
+    def __str__(self):
+        return self.nombre
 
 
 class Tecnico(Persona):
@@ -105,15 +111,18 @@ class RevisionTecnica(models.Model):
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=255, verbose_name='Nombre')
-    descripcion = models.TextField(verbose_name='Descripción')
+    descripcion = models.TextField(verbose_name='Descripción', null=True, blank=True)
     empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, related_name='categorias')
+
+    def __str__(self):
+        return self.nombre
 
 
 class Producto(models.Model):
     nombre = models.CharField(max_length=255, verbose_name='Nombre')
     cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
-    descripcion = models.TextField(verbose_name='Descripción')
+    descripcion = models.TextField(verbose_name='Descripción', null=True, blank=True)
     categoria = models.ForeignKey(
         Categoria, on_delete=models.CASCADE, related_name='productos')
 
@@ -121,15 +130,15 @@ class Producto(models.Model):
 class Precio (models.Model):
     valor = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Precio')
-    nombre = models.CharField(max_length=255, null=True, blank=True)
+    nombre = models.CharField(max_length=255)
     producto = models.ForeignKey(
         Producto, on_delete=models.CASCADE, related_name='precios')
 
 
 class Impuesto (models.Model):
     porcentaje = models.DecimalField(
-        max_digits=2, decimal_places=2, verbose_name='Porcentaje')
-    nombre = models.CharField(max_length=255, null=True, blank=True)
+        max_digits=4, decimal_places=2, verbose_name='Porcentaje')
+    nombre = models.CharField(max_length=255)
     producto = models.ForeignKey(
         Producto, on_delete=models.CASCADE, related_name='impuestos')
 

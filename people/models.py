@@ -22,6 +22,9 @@ class Persona(models.Model):
         verbose_name='Tipo de Identificación'
     )
 
+    def __str__(self):
+        return '{} {}'.format(self.nombre, self.apellido)
+
 
 class Direccion(models.Model):
     TIPO_DIRECCION = (
@@ -33,7 +36,8 @@ class Direccion(models.Model):
     calle_secundaria = models.CharField(
         max_length=250, null=True, blank=True, verbose_name='Calle Secundaria')
     telefono = models.CharField(max_length=250, verbose_name='Teléfono')
-    referencia = models.TextField(verbose_name='Referencia', null=True, blank=True,)
+    referencia = models.TextField(
+        verbose_name='Referencia', null=True, blank=True,)
     tipo_direccion = models.CharField(
         max_length=50,
         choices=TIPO_DIRECCION,
