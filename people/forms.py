@@ -57,13 +57,13 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 
-class MyAdminPasswordChangeForm(auth_admin.AdminPasswordChangeForm):
+class CustomAdminPasswordChangeForm(auth_admin.AdminPasswordChangeForm):
 
     def save(self, commit=True):
         """
         Saves the new password.
         """
-        password = self.cleaned_data["password"]
+        password = self.cleaned_data["password1"]
         self.user.myuser.set_password(password)
         if commit:
             self.user.myuser.save()

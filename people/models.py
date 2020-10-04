@@ -81,7 +81,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=True)
     nombre_de_usuario = models.CharField(max_length=50, unique=True)
     persona = models.OneToOneField(
-        Persona, null=True, on_delete=models.CASCADE,)
+        Persona, null=True, on_delete=models.CASCADE,related_name="usuario")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

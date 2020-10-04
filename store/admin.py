@@ -1,19 +1,8 @@
 from django.contrib import admin
-from store.models import Empresa, Tecnico, Proveedor, Categoria, Producto, Precio, Impuesto
-from people.models import Direccion, Usuario
-from django.contrib.auth import admin as auth_admin
-from people.forms import UserChangeForm, UserCreationForm, MyAdminPasswordChangeForm
+from people.models import Direccion
 
-
-class UserAdminInline(admin.StackedInline):
-    fieldsets = (
-        (('Información de Usuario'), {
-         'fields': ('nombre_de_usuario', 'correo_electronico', 'password')}),
-    )
-    form = UserChangeForm
-    add_form = UserCreationForm
-    change_password_form = MyAdminPasswordChangeForm
-    model = Usuario
+from store.models import (Categoria, Empresa, Impuesto, Precio, Producto,
+                          Proveedor, Tecnico)
 
 
 class DirecionAdminInline(admin.TabularInline):
@@ -41,14 +30,15 @@ class ProveedorAdmin(admin.ModelAdmin):
 
 class TecnicoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'apellido', 'numero_identificacion',
-                    'tipo_documento_identificacion')
+                    'tipo_documento_identificacion', 'usuario')
     fieldsets = (
         (('Datos Personales'), {'fields': (
             'nombre', 'apellido', 'numero_identificacion', 'tipo_documento_identificacion')},
          ),
         (('Datos de Técnico'), {'fields': ('fecha_ingreso',)},
-         ))
-    inlines = (UserAdminInline, DirecionAdminInline)
+         ),
+    )
+    inlines = (DirecionAdminInline,)
 
 
 class CategoriaAdmin(admin.ModelAdmin):
