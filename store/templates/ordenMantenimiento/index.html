@@ -1,0 +1,43 @@
+{% extends 'base.html' %} {% block title %}Órdenes de Mantenimiento{% endblock%}
+{% block breadcrumbs %}
+<section class="content-header">
+  <ol class="breadcrumb float-sm-right">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+    <li class="breadcrumb-item active">Órdenes</li>
+  </ol>
+</section>
+
+{% endblock %} {% block content_block_wrap %}
+<div class="page-header">
+  <h1>Órdenes de Mantenimiento</h1>
+</div>
+
+<div class="row">
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Fecha de Registro</th>
+          <th>Cliente</th>
+          <th>Estado</th>
+          <th>Monto</th>
+          <th>Descripción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for orden in ordenes %}
+        <tr>
+          <td>{{ orden.fecha_registro }}</td>
+          <td>{{ orden.cliente }}</td>
+          <td>{{ orden.estado }}</td>
+          <td>{{ orden.monto_servicio }}</td>
+          <td>
+            <a href="{% url 'editar-orden' orden.id %}"> {{ orden.descripcion }} </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
