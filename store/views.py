@@ -7,6 +7,17 @@ from django.http import HttpResponseRedirect
 
 @login_required()
 def index(request):
+    """
+    Permite listar las órdenes de mantenimiento
+    **Context**
+
+    ``OrdenMantenimiento``
+        An instance of :model:`store.OrdenMantenimiento`.
+
+    **Template:**
+
+    :template:`ordenMantenimiento/index.html`
+    """
     ordenes = OrdenMantenimiento.objects.all()
     return render(request, 'ordenMantenimiento/index.html', locals())
 

@@ -10,7 +10,9 @@ class TecnicoForm(ModelForm):
 
 
 class OrdenMantenimientoForm(ModelForm):
-
+    """
+    Formulario personalizado para crear y editar una orden de mantenimiento.
+    """
     class Meta:
         model = OrdenMantenimiento
         fields = ('descripcion', 'estado', 'cliente')

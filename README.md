@@ -1,4 +1,5 @@
 # gmeBox
+
 # REQUIREMIENTOS
 
 - Instalar python 3.6
@@ -14,3 +15,8 @@
 - Escribir el siguiente comando
   from people.models import Usuario</br>
   usuario = Usuario.objects.create_superuser(email='dlinahuazo@tecnologicosudamericano.edu.ec', password='gmeBox', username='dlinahuazo')
+
+# Documentación
+
+- Para ver la documentación del proyecto la aplicación se debe ir a la ruta `{IP}:{PUERTO}/admin/doc/` aqui un ejemplo
+  `http:localhost:8000/admin/doc/` y se podrá observar toda la documentación de los modelos, vistas, admin, formularios y urls
