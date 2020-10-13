@@ -1,8 +1,10 @@
-from django.conf.urls import url
+from django.urls import path
 
-from . import views
+from store.views import OrdenCreateView, OrdenListView, OrdenDeleteView, OrdenUpdateView
 
 urlpatterns = [
-    url(r'^ordenes/$', views.index, name='ordenes'),
-    url(r'^ordenes/edit/(\d+)$', views.editar_orden, name='editar-orden'),
+    path('orders', OrdenListView.as_view(), name='orders'),
+    path('orders/add/', OrdenCreateView.as_view(), name='order-add'),
+    path('orders/<int:pk>/', OrdenUpdateView.as_view(), name='order-update'),
+    path('orders/<int:pk>/delete/', OrdenDeleteView.as_view(), name='order-delete'),
 ]

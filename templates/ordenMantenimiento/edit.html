@@ -1,8 +1,6 @@
-{% extends 'base.html' %}
-{% block content_block_wrap %}
-<form action="/editar-orden/" method="post">
-  {% csrf_token %}
-   {{ form}}
+{% extends 'base.html' %} {% block content_block_wrap %}
+<form method="POST">
+  {% csrf_token %} {{ form}}
   <input type="submit" value="Guardar" />
 </form>
 {% endblock %}

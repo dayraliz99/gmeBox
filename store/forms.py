@@ -15,9 +15,10 @@ class OrdenMantenimientoForm(ModelForm):
     """
     class Meta:
         model = OrdenMantenimiento
-        fields = ('descripcion', 'estado', 'cliente')
+        fields = ('empresa', 'cliente', 'descripcion', 'estado', )
         widgets = dict(
             estado=forms.Select(attrs={'class': 'form-control'}),
             cliente=forms.Select(attrs={'class': 'form-control'}),
+            empresa=forms.Select(attrs={'class': 'form-control'}),
             descripcion=forms.TextInput(attrs={'class': 'form-control'}),
         )
