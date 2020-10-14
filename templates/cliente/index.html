@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Clientes{% endblock%}
+{% block breadcrumbs %}
+<section class="content-header">
+  <ol class="breadcrumb float-sm-right">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+    <li class="breadcrumb-item active">Clientes</li>
+  </ol>
+</section>
+
+{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Clientes</h3>
+    <div class="card-tools">
+      <input name="filter" />
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover datatable table-bordered">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Número de Identificación</th>
+            <th>Tipo de Documento de Identificación</th>
+            <th>Editar</th>
+            <th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cliente in clientes %}
+          <tr>
+            <td>{{ cliente.nombre }}</td>
+            <td>{{ cliente.apellido }}</td>
+            <td>{{ cliente.numero_identificacion }}</td>
+            <td>{{ cliente.tipo_documento_identificacion }}</td>
+            <td>
+              <a href="{% url 'client-update' cliente.id %}"> Editar </a>
+            </td>
+            <td>
+              <a href="{% url 'client-delete' cliente.id %}"> Eliminar </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="row">
+      <div class="pagination">
+        <span class="step-links">
+          {% if page_obj.has_previous %}
+          <a href="?page=1">&laquo; first</a>
+          <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+          {% endif %}
+
+          <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+          </span>
+
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">next</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+          {% endif %}
+        </span>
+      </div>
+      <a class="btn btn-primary pull-right" href="{% url 'client-add' %}">
+        <i class="nav-icon fas fa-plus-circle"></i> Agregar
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
