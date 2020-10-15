@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from store.models import Tecnico, OrdenMantenimiento, Cliente
-from store.forms import OrdenMantenimientoForm, ClienteForm
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden
+from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm
 from django.http import HttpResponseRedirect
+from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -40,11 +41,12 @@ class OrdenListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(OrdenListView, self).get_context_data(**kwargs)
-        context['filter'] = self.request.GET.get('filter')
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
         return context
 
 
-class OrdenCreateView(LoginRequiredMixin, CreateView):
+class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     model = OrdenMantenimiento
     form_class = OrdenMantenimientoForm
     template_name = 'ordenMantenimiento/edit.html'
@@ -54,7 +56,7 @@ class OrdenCreateView(LoginRequiredMixin, CreateView):
         return reverse('orders')
 
 
-class OrdenUpdateView(UpdateView):
+class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = OrdenMantenimiento
     form_class = OrdenMantenimientoForm
     template_name = 'ordenMantenimiento/edit.html'
@@ -107,11 +109,12 @@ class ClienteListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ClienteListView, self).get_context_data(**kwargs)
-        context['filter'] = self.request.GET.get('filter')
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
         return context
 
 
-class ClienteCreateView(LoginRequiredMixin, CreateView):
+class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     model = Cliente
     form_class = ClienteForm
     paginate_position = 'Both'
@@ -123,12 +126,12 @@ class ClienteCreateView(LoginRequiredMixin, CreateView):
         return reverse('clients')
 
 
-class ClienteUpdateView(UpdateView):
+class ClienteUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = Cliente
     form_class = ClienteForm
     template_name = 'cliente/edit.html'
     success_url = reverse_lazy('orders')
-    success_message = 'Cliente actualizada con exito'
+    success_message = 'Cliente actualizado con exito'
 
     def get_success_url(self, *args, **kwargs):
         return reverse('client-update', kwargs={'pk': self.kwargs['pk']})
@@ -145,3 +148,65 @@ class ClienteDeleteView(DeleteView):
             return HttpResponseRedirect(url)
         else:
             return super(ClienteDeleteView, self).post(request, *args, **kwargs)
+
+
+class DetalleOrdenListView(LoginRequiredMixin, ListView):
+    """
+    Permite listar detalles de órdenes de mantenimiento
+    **Context**
+
+    ``DetalleOrden``
+        An instance of :model:`store.DetalleOrden`.
+
+    **Template:**
+
+    :template:`detalleOrden/index.html`
+    """
+    model = DetalleOrden
+    template_name = 'detalleOrden/index.html'
+    context_object_name = 'detalles'
+    paginate_by = 10
+    queryset = DetalleOrden.objects.all()
+
+    def get_queryset(self):
+        new_context = self.queryset
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(
+                Q(nombre_equipo__icontains=self.request.GET.get('filter')))
+
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(DetalleOrdenListView, self).get_context_data(**kwargs)
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
+        return context
+
+
+class DetalleOrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+    model = DetalleOrden
+    form_class = DetalleOrdenForm
+    template_name = 'detalleOrden/edit.html'
+    success_message = 'Detalle creado con exito'
+    success_url = reverse_lazy('order-details')
+
+
+class DetalleOrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+    model = DetalleOrden
+    form_class = DetalleOrdenForm
+    template_name = 'detalleOrden/edit.html'
+    success_url = reverse_lazy('order-details')
+    success_message = 'Órden actualizada con exito'
+
+
+class DetalleOrdenDeleteView(DeleteView):
+    model = DetalleOrden
+    template_name = 'detalleOrden/delete.html'
+    success_url = reverse_lazy('order-details')
+
+    def post(self, request, *args, **kwargs):
+        if "cancel" in request.POST:
+            url = reverse_lazy('order-details')
+            return HttpResponseRedirect(url)
+        else:
+            return super(DetalleOrdenDeleteView, self).post(request, *args, **kwargs)

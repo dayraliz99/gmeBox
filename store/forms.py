@@ -1,5 +1,5 @@
 from django import forms
-from store.models import Tecnico, OrdenMantenimiento, Cliente
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden
 from django.forms import ModelForm
 
 
@@ -39,4 +39,23 @@ class ClienteForm(ModelForm):
             apellido=forms.TextInput(attrs={'class': 'form-control'}),
             numero_identificacion=forms.TextInput(
                 attrs={'class': 'form-control'}),
+        )
+
+
+class DetalleOrdenForm(ModelForm):
+    """
+    Formulario personalizado para crear y editar un detalle de orden de mantenimiento.
+     **Context**
+    ``DetalleOrden``
+        An instance of :model:`store.DetalleOrden`.
+    """
+    class Meta:
+        model = DetalleOrden
+        fields = ('nombre_equipo', 'precio_servicio',
+                  'observacion', 'estado', )
+        widgets = dict(
+            nombre_equipo=forms.TextInput(attrs={'class': 'form-control'}),
+            precio_servicio=forms.TextInput(attrs={'class': 'form-control'}),
+            observacion=forms.TextInput(attrs={'class': 'form-control'}),
+            estado=forms.TextInput(attrs={'class': 'form-control'}),
         )
