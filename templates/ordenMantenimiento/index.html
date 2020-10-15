@@ -8,64 +8,77 @@
 </section>
 
 {% endblock %} {% block content %}
-<div class="page-header">
-  <h1>Órdenes de Mantenimiento</h1>
-</div>
-
-<div class="row">
-  <div class="table-responsive">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Fecha de Registro</th>
-          <th>Cliente</th>
-          <th>Estado</th>
-          <th>Monto</th>
-          <th>Descripción</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for orden in ordenes %}
-        <tr>
-          <td>{{ orden.fecha_registro }}</td>
-          <td>{{ orden.cliente }}</td>
-          <td>{{ orden.estado }}</td>
-          <td>{{ orden.monto_servicio }}</td>
-          <td>
-            <a href="{% url 'order-update' orden.id %}">
-              {{ orden.descripcion }}
-            </a>
-          </td>
-          <td><a href="{% url 'order-delete' orden.id %}"> Eliminar </a></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Clientes</h3>
+    <div class="card-tools">
+      <form action="" method="get">
+        <input name="filter" value="{{filter}}" />
+        <button class="btn btn-primary" type="submit">
+          <i class="nav-icon fas fa-search"></i> Buscar
+        </button>
+      </form>
+    </div>
   </div>
-</div>
-<div class="row">
-  <div class="pagination">
-    <span class="step-links">
-      {% if page_obj.has_previous %}
-      <a href="?page=1">&laquo; first</a>
-      <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-      {% endif %}
-
-      <span class="current">
-        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-      </span>
-
-      {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}">next</a>
-      <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-      {% endif %}
-    </span>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover datatable table-bordered">
+        <thead>
+          <tr>
+            <th>Fecha de Registro</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th>Monto</th>
+            <th>Descripción</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for orden in ordenes %}
+          <tr>
+            <td>{{ orden.fecha_registro }}</td>
+            <td>{{ orden.cliente.nombre }} {{ orden.cliente.apellido }}</td>
+            <td>{{ orden.estado }}</td>
+            <td>{{ orden.monto_servicio }}</td>
+            <td>
+              <a href="{% url 'order-update' orden.id %}">
+                {{ orden.descripcion }}
+              </a>
+            </td>
+            <td><a href="{% url 'order-delete' orden.id %}"> Eliminar </a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
-<div class="row">
-  <a class="btn btn-primary pull-right" href="{% url 'order-add' %}">
-    Agregar
-  </a>
+  <div class="card-footer">
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-8">
+        <div class="pagination">
+          <span class="step-links">
+            {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-4">
+        <a class="btn btn-primary pull-right" href="{% url 'order-add' %}">
+          <i class="nav-icon fas fa-plus-circle"></i> Agregar
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

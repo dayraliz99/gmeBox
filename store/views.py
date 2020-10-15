@@ -8,6 +8,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.urls import reverse
+from django.db.models import Q
 
 
 class OrdenListView(LoginRequiredMixin, ListView):
@@ -25,8 +26,22 @@ class OrdenListView(LoginRequiredMixin, ListView):
     model = OrdenMantenimiento
     template_name = 'ordenMantenimiento/index.html'
     context_object_name = 'ordenes'
-    paginate_by = 10
+    paginate_by = 20
     queryset = OrdenMantenimiento.objects.all()
+
+    def get_queryset(self):
+        new_context = self.queryset
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(
+                Q(descripcion__icontains=self.request.GET.get('filter')) | Q(
+                    cliente__apellido__icontains=self.request.GET.get('filter'))
+            )
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenListView, self).get_context_data(**kwargs)
+        context['filter'] = self.request.GET.get('filter')
+        return context
 
 
 class OrdenCreateView(LoginRequiredMixin, CreateView):
@@ -80,18 +95,20 @@ class ClienteListView(LoginRequiredMixin, ListView):
     context_object_name = 'clientes'
     paginate_by = 20
     queryset = Cliente.objects.all()
-    
-    # def get_queryset(self):
-    #     new_context = Cliente.objects.filter(
-    #         nombre=self.kwargs['filter'],
-    #     )
-    #     return new_context
 
-    # def get_context_data(self, **kwargs):
-    #     context = super(ClienteListView, self).get_context_data(**kwargs)
-    #     context['filter'] = self.request.GET.get('filter')
-    #     context['orderby'] = self.request.GET.get('orderby')
-    #     return context
+    def get_queryset(self):
+        new_context = self.queryset
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(
+                Q(nombre__icontains=self.request.GET.get('filter')) | Q(
+                    apellido__icontains=self.request.GET.get('filter'))
+            )
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteListView, self).get_context_data(**kwargs)
+        context['filter'] = self.request.GET.get('filter')
+        return context
 
 
 class ClienteCreateView(LoginRequiredMixin, CreateView):
