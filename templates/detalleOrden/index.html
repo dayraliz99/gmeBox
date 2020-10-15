@@ -2,8 +2,8 @@
 {% block breadcrumbs %}
 <section class="content-header">
   <ol class="breadcrumb float-sm-right">
-    <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
-    <li class="breadcrumb-item active">Detalles</li>
+    <li class="breadcrumb-item"><a href="{% url 'order-update' order_id %}">Detalle de Orden</a></li>
+    <li class="breadcrumb-item active">Equipos</li>
   </ol>
 </section>
 
@@ -28,21 +28,24 @@
             <th>Equipo</th>
             <th>Estado</th>
             <th>Observación</th>
-            <th>Acción</th>
+            <th>Precio de Servicio</th>
+            <th>Accion</th>
           </tr>
         </thead>
         <tbody>
           {% for detalle in detalles %}
           <tr>
-            <td>{{ orden.nombre_equipo }}</td>
-            <td>{{ orden.estado }}</td>
-            <td>{{ orden.observacion }}</td>
+            <td>{{ detalle.nombre_equipo }}</td>
+            <td>{{ detalle.estado }}</td>
+            <td>{{ detalle.observacion }}</td>
+            <td>{{ detalle.precio_servicio }}</td>
             <td>
-              <a href="{% url 'order-detail-update' detalle.id %}">
-                {{ orden.descripcion }}
+              <a href="{% url 'order-detail-update' order_id detalle.id %}">
+                <i class="nav-icon text-success fa fa-edit"></i>
               </a>
+              <a href="{% url 'order-detail-delete' order_id detalle.id %}"> <i
+                  class="nav-icon text-danger fa fa-trash"></i> </a>
             </td>
-            <td><a href="{% url 'order-detail-delete' orden.id %}"> Eliminar </a></td>
           </tr>
           {% endfor %}
         </tbody>
@@ -71,7 +74,7 @@
         </div>
       </div>
       <div class="col-xs-12 col-sm-12 col-md-4">
-        <a class="btn btn-primary pull-right" href="{% url 'order-add' %}">
+        <a class="btn btn-primary pull-right" href="{% url 'order-detail-add' order_id %}">
           <i class="nav-icon fas fa-plus-circle"></i> Agregar
         </a>
       </div>

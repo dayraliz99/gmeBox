@@ -1,6 +1,6 @@
 from django.db import models
 from people.models import Persona
-
+from django.urls import reverse
 
 class Empresa(models.Model):
     """
@@ -53,7 +53,7 @@ class Tecnico(Persona):
 
 class Cliente(Persona):
     def __str__(self):
-        return self.numero_identificacion
+        return '{} {} {}'.format(self.nombre, self.apellido, self.numero_identificacion)
 
 
 class OrdenMantenimiento(models.Model):
@@ -82,6 +82,9 @@ class OrdenMantenimiento(models.Model):
         Cliente, on_delete=models.CASCADE, related_name='ordenes')
     empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, related_name='ordenes')
+    
+    def get_absolute_url(self):
+        return reverse('order-update', kwargs={'pk':self.pk})
 
 
 class DetalleOrden(models.Model):

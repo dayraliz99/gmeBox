@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa
 from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm
 from django.http import HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
@@ -10,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.urls import reverse
 from django.db.models import Q
+from django.core.exceptions import ValidationError
 
 
 class OrdenListView(LoginRequiredMixin, ListView):
@@ -52,19 +53,26 @@ class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     template_name = 'ordenMantenimiento/edit.html'
     success_message = 'Órden creada con exito'
 
-    def get_success_url(self, *args, **kwargs):
-        return reverse('orders')
+    def form_valid(self, form):
+        empresa = Empresa.objects.first()
+        if empresa is None:
+            raise ValidationError("Debe agregar datos de empresa")
+        form.instance.empresa_id = empresa.id
+        return super().form_valid(form)
 
 
 class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = OrdenMantenimiento
     form_class = OrdenMantenimientoForm
     template_name = 'ordenMantenimiento/edit.html'
-    success_url = reverse_lazy('orders')
     success_message = 'Órden actualizada con exito'
 
-    def get_success_url(self, *args, **kwargs):
-        return reverse('order-update', kwargs={'pk': self.kwargs['pk']})
+    def form_valid(self, form):
+        empresa = Empresa.objects.first()
+        if empresa is None:
+            raise ValidationError("Debe agregar datos de empresa")
+        form.instance.empresa_id = empresa.id
+        return super().form_valid(form)
 
 
 class OrdenDeleteView(DeleteView):
@@ -171,13 +179,14 @@ class DetalleOrdenListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         new_context = self.queryset
         if self.request.GET.get('filter'):
-            new_context = new_context.filter(
+            new_context = new_context.filter(orden_mantenimiento__id=self.kwargs['order_id']).filter(
                 Q(nombre_equipo__icontains=self.request.GET.get('filter')))
 
         return new_context
 
     def get_context_data(self, **kwargs):
         context = super(DetalleOrdenListView, self).get_context_data(**kwargs)
+        context['order_id'] = self.kwargs['order_id']
         context['filter'] = self.request.GET.get(
             'filter') if self.request.GET.get('filter') else ''
         return context
@@ -190,19 +199,48 @@ class DetalleOrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView
     success_message = 'Detalle creado con exito'
     success_url = reverse_lazy('order-details')
 
+    def get_success_url(self):
+        return reverse_lazy('order-details', kwargs={'order_id': self.kwargs['order_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(DetalleOrdenCreateView,
+                        self).get_context_data(**kwargs)
+        context['order_id'] = self.kwargs['order_id']
+        return context
+
+    def form_valid(self, form):
+        form.instance.orden_mantenimiento_id = self.kwargs['order_id']
+        return super().form_valid(form)
+
 
 class DetalleOrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = DetalleOrden
     form_class = DetalleOrdenForm
     template_name = 'detalleOrden/edit.html'
-    success_url = reverse_lazy('order-details')
     success_message = 'Órden actualizada con exito'
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('order-details', kwargs={'order_id': self.kwargs['order_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(DetalleOrdenUpdateView,
+                        self).get_context_data(**kwargs)
+        context['order_id'] = self.kwargs['order_id']
+        return context
 
 
 class DetalleOrdenDeleteView(DeleteView):
     model = DetalleOrden
     template_name = 'detalleOrden/delete.html'
-    success_url = reverse_lazy('order-details')
+
+    def get_context_data(self, **kwargs):
+        context = super(DetalleOrdenDeleteView,
+                        self).get_context_data(**kwargs)
+        context['order_id'] = self.kwargs['order_id']
+        return context
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('order-details', kwargs={'order_id': self.kwargs['order_id']})
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
