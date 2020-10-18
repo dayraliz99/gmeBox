@@ -2,15 +2,18 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa
 from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm
+from people.models import Usuario
 from django.http import HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import ListView
 from django.urls import reverse
 from django.db.models import Q
 from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.models import Group
 
 
 class OrdenListView(LoginRequiredMixin, ListView):
@@ -36,8 +39,10 @@ class OrdenListView(LoginRequiredMixin, ListView):
         if self.request.GET.get('filter'):
             new_context = new_context.filter(
                 Q(descripcion__icontains=self.request.GET.get('filter')) | Q(
-                    cliente__apellido__icontains=self.request.GET.get('filter'))
-            )
+                    cliente__apellido__icontains=self.request.GET.get('filter')) | Q(
+                        cliente__nombre__icontains=self.request.GET.get('filter')) | Q(
+                        cliente__numero_identificacion__icontains=self.request.GET.get('filter')))
+
         return new_context
 
     def get_context_data(self, **kwargs):
@@ -47,11 +52,23 @@ class OrdenListView(LoginRequiredMixin, ListView):
         return context
 
 
-class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    """
+    Permite crear órdenes de mantenimiento
+    **Context**
+
+    ``OrdenMantenimiento``
+        An instance of :model:`store.OrdenMantenimiento`.
+
+    **Template:**
+
+    :template:`ordenMantenimiento/edit.html`
+    """
     model = OrdenMantenimiento
     form_class = OrdenMantenimientoForm
     template_name = 'ordenMantenimiento/edit.html'
     success_message = 'Órden creada con exito'
+    permission_required = ('add_ordenmantenimiento',)
 
     def form_valid(self, form):
         empresa = Empresa.objects.first()
@@ -61,11 +78,23 @@ class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    """
+    Permite editar órdenes de mantenimiento
+    **Context**
+
+    ``OrdenMantenimiento``
+        An instance of :model:`store.OrdenMantenimiento`.
+
+    **Template:**
+
+    :template:`ordenMantenimiento/edit.html`
+    """
     model = OrdenMantenimiento
     form_class = OrdenMantenimientoForm
     template_name = 'ordenMantenimiento/edit.html'
     success_message = 'Órden actualizada con exito'
+    permission_required = ('change_ordenmantenimiento',)
 
     def form_valid(self, form):
         empresa = Empresa.objects.first()
@@ -75,10 +104,22 @@ class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class OrdenDeleteView(DeleteView):
+class OrdenDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
+    """
+    Permite eliminar órdenes de mantenimiento
+    **Context**
+
+    ``OrdenMantenimiento``
+        An instance of :model:`store.OrdenMantenimiento`.
+
+    **Template:**
+
+    :template:`ordenMantenimiento/delete.html`
+    """
     model = OrdenMantenimiento
     template_name = 'ordenMantenimiento/delete.html'
     success_url = reverse_lazy('orders')
+    permission_required = ('delete_ordenmantenimiento',)
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
@@ -122,33 +163,62 @@ class ClienteListView(LoginRequiredMixin, ListView):
         return context
 
 
-class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Cliente
     form_class = ClienteForm
     paginate_position = 'Both'
     search_fields = ['nombre__icontains']
     template_name = 'cliente/edit.html'
     success_message = 'Cliente creado con exito'
+    permission_required = ('add_cliente',)
 
     def get_success_url(self, *args, **kwargs):
         return reverse('clients')
 
+    def form_valid(self, form):
+        cleaned_data = form.clean()
+        group = Group.objects.get(name='CLIENTE')
+        usuario = Usuario(nombre_de_usuario=cleaned_data.get("correo_electronico"),
+                          is_staff=1, correo_electronico=cleaned_data.get("correo_electronico"))
+        client = form.save()
+        usuario.persona_id = client.id
+        usuario.password = make_password(form.instance.numero_identificacion)
+        usuario.save()
+        group.user_set.add(usuario)
+        return super().form_valid(form)
 
-class ClienteUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+
+class ClienteUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Cliente
     form_class = ClienteForm
     template_name = 'cliente/edit.html'
     success_url = reverse_lazy('orders')
     success_message = 'Cliente actualizado con exito'
+    permission_required = ('change_cliente',)
 
     def get_success_url(self, *args, **kwargs):
         return reverse('client-update', kwargs={'pk': self.kwargs['pk']})
 
+    def get_initial(self):
+        initial = super(ClienteUpdateView, self).get_initial()
+        initial['correo_electronico'] = self.object.usuario.correo_electronico
+        return initial
 
-class ClienteDeleteView(DeleteView):
+    def form_valid(self, form):
+        cleaned_data = form.clean()
+        usuario = Usuario.objects.get(persona_id=form.instance.id)
+        usuario.correo_electronico = cleaned_data.get("correo_electronico")
+        usuario.nombre_de_usuario = cleaned_data.get("correo_electronico")
+        usuario.password = make_password(form.instance.numero_identificacion)
+        usuario.save()
+        return super().form_valid(form)
+
+
+class ClienteDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
     model = Cliente
     template_name = 'cliente/delete.html'
     success_url = reverse_lazy('clients')
+    permission_required = ('delete_cliente',)
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
@@ -229,7 +299,7 @@ class DetalleOrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView
         return context
 
 
-class DetalleOrdenDeleteView(DeleteView):
+class DetalleOrdenDeleteView(DeleteView, LoginRequiredMixin):
     model = DetalleOrden
     template_name = 'detalleOrden/delete.html'
 

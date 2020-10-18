@@ -27,17 +27,20 @@ class ClienteForm(ModelForm):
     """
     Formulario personalizado para crear y editar un cliente.
     """
+    correo_electronico = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control'}))
+
     class Meta:
         model = Cliente
         fields = ('tipo_documento_identificacion', 'nombre',
-                  'apellido', 'numero_identificacion', )
+                  'apellido', 'numero_identificacion',)
         widgets = dict(
             tipo_documento_identificacion=forms.Select(
                 attrs={'class': 'form-control'}),
             nombre=forms.TextInput(attrs={'class': 'form-control'}),
             apellido=forms.TextInput(attrs={'class': 'form-control'}),
             numero_identificacion=forms.TextInput(
-                attrs={'class': 'form-control'}),
+                attrs={'class': 'form-control'})
         )
 
 

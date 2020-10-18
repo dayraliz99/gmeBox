@@ -10,7 +10,7 @@
 {% endblock %} {% block content %}
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">Clientes</h3>
+    <h3 class="card-title">Órdenes de Mantenimiento</h3>
     <div class="card-tools">
       <form action="" method="get">
         <input name="filter" value="{{filter}}" />
@@ -41,11 +41,14 @@
             <td>{{ orden.estado }}</td>
             <td>{{ orden.monto_servicio }}</td>
             <td>
-              <a href="{% url 'order-update' orden.id %}">
-                {{ orden.descripcion }}
-              </a>
+              {{ orden.descripcion }}
             </td>
-            <td><a href="{% url 'order-delete' orden.id %}"> Eliminar </a></td>
+            <td>
+              <a href="{% url 'order-update' orden.id %}">
+                <i class="nav-icon text-success fa fa-edit"></i>
+              </a>
+              <a href="{% url 'order-delete' orden.id %}"> <i class="nav-icon text-danger fa fa-trash"></i> </a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

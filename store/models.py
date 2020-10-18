@@ -62,7 +62,7 @@ class OrdenMantenimiento(models.Model):
     """
     ESTADO = (
         ('NUEVO', 'Nuevo'),
-        ('EN_REVISION', 'EN revisión'),
+        ('EN_REVISION', 'En revisión'),
         ('REVISADO', 'Revisado'),
         ('FINALIZADO', 'Finalizado'),
     )

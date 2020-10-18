@@ -33,8 +33,7 @@
             <th>Apellido</th>
             <th>Número de Identificación</th>
             <th>Tipo de Documento de Identificación</th>
-            <th>Editar</th>
-            <th>Eliminar</th>
+            <th>Acción</th>
           </tr>
         </thead>
         <tbody>
@@ -45,10 +44,10 @@
             <td>{{ cliente.numero_identificacion }}</td>
             <td>{{ cliente.tipo_documento_identificacion }}</td>
             <td>
-              <a href="{% url 'client-update' cliente.id %}"> Editar </a>
-            </td>
-            <td>
-              <a href="{% url 'client-delete' cliente.id %}"> Eliminar </a>
+              <a href="{% url 'client-update' cliente.id %}">
+                <i class="nav-icon text-success fa fa-edit"></i>
+              </a>
+              <a href="{% url 'client-delete' cliente.id %}"> <i class="nav-icon text-danger fa fa-trash"></i> </a>
             </td>
           </tr>
           {% endfor %}

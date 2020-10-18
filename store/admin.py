@@ -2,7 +2,7 @@ from django.contrib import admin
 from people.models import Direccion
 
 from store.models import (Categoria, Empresa, Impuesto, Precio, Producto,
-                          Proveedor, Tecnico)
+                          Proveedor)
 
 
 class DirecionAdminInline(admin.TabularInline):
@@ -26,19 +26,6 @@ class ProveedorAdmin(admin.ModelAdmin):
         (('Información de Proveedor'), {'fields': (
             'nombre', 'contacto', 'email', 'telefono', 'celular', 'direccion')}),
     )
-
-
-class TecnicoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido', 'numero_identificacion',
-                    'tipo_documento_identificacion', 'usuario')
-    fieldsets = (
-        (('Datos Personales'), {'fields': (
-            'nombre', 'apellido', 'numero_identificacion', 'tipo_documento_identificacion')},
-         ),
-        (('Datos de Técnico'), {'fields': ('fecha_ingreso',)},
-         ),
-    )
-    inlines = (DirecionAdminInline,)
 
 
 class CategoriaAdmin(admin.ModelAdmin):
@@ -67,7 +54,6 @@ class ProductoAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Empresa, EmpresaAdmin)
-admin.site.register(Tecnico, TecnicoAdmin)
 admin.site.register(Proveedor, ProveedorAdmin)
 admin.site.register(Categoria, CategoriaAdmin)
 admin.site.register(Producto, ProductoAdmin)
