@@ -4,9 +4,23 @@ from django.forms import ModelForm
 
 
 class TecnicoForm(ModelForm):
+    correo_electronico = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control'}))
+
     class Meta:
         model = Tecnico
-        fields = '__all__'
+        fields = ('tipo_documento_identificacion', 'nombre',
+                  'apellido', 'numero_identificacion', 'fecha_ingreso')
+        widgets = dict(
+            tipo_documento_identificacion=forms.Select(
+                attrs={'class': 'form-control'}),
+            nombre=forms.TextInput(attrs={'class': 'form-control'}),
+            apellido=forms.TextInput(attrs={'class': 'form-control'}),
+            numero_identificacion=forms.TextInput(
+                attrs={'class': 'form-control'}),
+            fecha_ingreso=forms.DateInput(
+                attrs={'class': 'form-control', "type":"date"})
+        )
 
 
 class OrdenMantenimientoForm(ModelForm):

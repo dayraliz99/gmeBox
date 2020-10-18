@@ -25,4 +25,12 @@ urlpatterns = [
     path('clients/<int:pk>/delete/',
          views.ClienteDeleteView.as_view(), name='client-delete'),
 
+    path('technicians', views.TecnicoListView.as_view(), name='technicians'),
+    path('technicians/add/',
+         views.TecnicoCreateView.as_view(), name='technician-add'),
+    path('technicians/<int:pk>/',
+         views.TecnicoUpdateView.as_view(), name='technician-update'),
+    path('technicians/<int:pk>/delete/',
+         views.TecnicoDeleteView.as_view(), name='technician-delete'),
+
 ]

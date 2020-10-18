@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa
-from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm
+from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm
 from people.models import Usuario
 from django.http import HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
@@ -117,7 +117,7 @@ class OrdenDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
     :template:`ordenMantenimiento/delete.html`
     """
     model = OrdenMantenimiento
-    template_name = 'ordenMantenimiento/delete.html'
+    template_name = 'delete.html'
     success_url = reverse_lazy('orders')
     permission_required = ('delete_ordenmantenimiento',)
 
@@ -131,7 +131,7 @@ class OrdenDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
 
 class ClienteListView(LoginRequiredMixin, ListView):
     """
-    Permite listar los cliente
+    Permite listar clientes
     **Context**
 
     ``Cliente``
@@ -216,7 +216,7 @@ class ClienteUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequi
 
 class ClienteDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
     model = Cliente
-    template_name = 'cliente/delete.html'
+    template_name = 'delete.html'
     success_url = reverse_lazy('clients')
     permission_required = ('delete_cliente',)
 
@@ -226,6 +226,105 @@ class ClienteDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin)
             return HttpResponseRedirect(url)
         else:
             return super(ClienteDeleteView, self).post(request, *args, **kwargs)
+
+
+class TecnicoListView(LoginRequiredMixin, ListView):
+    """
+    Permite listar técnicos
+    **Context**
+
+    ``Tecnico``
+        An instance of :model:`store.Tecnico`.
+
+    **Template:**
+
+    :template:`tecnico/index.html`
+    """
+    model = Tecnico
+    template_name = 'tecnico/index.html'
+    context_object_name = 'tecnicos'
+    paginate_by = 20
+    queryset = Tecnico.objects.all()
+
+    def get_queryset(self):
+        new_context = self.queryset
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(
+                Q(nombre__icontains=self.request.GET.get('filter')) | Q(
+                    apellido__icontains=self.request.GET.get('filter'))
+            )
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(TecnicoListView, self).get_context_data(**kwargs)
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
+        return context
+
+
+class TecnicoCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    model = Tecnico
+    form_class = TecnicoForm
+    paginate_position = 'Both'
+    search_fields = ['nombre__icontains']
+    template_name = 'tecnico/edit.html'
+    success_message = 'Técnico creado con exito'
+    permission_required = ('add_tecnico',)
+
+    def get_success_url(self, *args, **kwargs):
+        return reverse('technicians')
+
+    def form_valid(self, form):
+        cleaned_data = form.clean()
+        group = Group.objects.get(name='TECNICO')
+        usuario = Usuario(nombre_de_usuario=cleaned_data.get("correo_electronico"),
+                          is_staff=1, correo_electronico=cleaned_data.get("correo_electronico"))
+        tecnico = form.save()
+        usuario.persona_id = tecnico.id
+        usuario.password = make_password(form.instance.numero_identificacion)
+        usuario.save()
+        group.user_set.add(usuario)
+        return super().form_valid(form)
+
+
+class TecnicoUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Tecnico
+    form_class = TecnicoForm
+    template_name = 'tecnico/edit.html'
+    success_url = reverse_lazy('technicians')
+    success_message = 'Técnico actualizado con exito'
+    permission_required = ('change_tecnico',)
+
+    def get_success_url(self, *args, **kwargs):
+        return reverse('technician-update', kwargs={'pk': self.kwargs['pk']})
+
+    def get_initial(self):
+        initial = super(TecnicoUpdateView, self).get_initial()
+        initial['correo_electronico'] = self.object.usuario.correo_electronico
+        return initial
+
+    def form_valid(self, form):
+        cleaned_data = form.clean()
+        usuario = Usuario.objects.get(persona_id=form.instance.id)
+        usuario.correo_electronico = cleaned_data.get("correo_electronico")
+        usuario.nombre_de_usuario = cleaned_data.get("correo_electronico")
+        usuario.password = make_password(form.instance.numero_identificacion)
+        usuario.save()
+        return super().form_valid(form)
+
+
+class TecnicoDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
+    model = Tecnico
+    template_name = 'delete.html'
+    success_url = reverse_lazy('technicians')
+    permission_required = ('delete_tecnico',)
+
+    def post(self, request, *args, **kwargs):
+        if "cancel" in request.POST:
+            url = reverse_lazy('technicians')
+            return HttpResponseRedirect(url)
+        else:
+            return super(TecnicoDeleteView, self).post(request, *args, **kwargs)
 
 
 class DetalleOrdenListView(LoginRequiredMixin, ListView):
@@ -301,7 +400,7 @@ class DetalleOrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView
 
 class DetalleOrdenDeleteView(DeleteView, LoginRequiredMixin):
     model = DetalleOrden
-    template_name = 'detalleOrden/delete.html'
+    template_name = 'delete.html'
 
     def get_context_data(self, **kwargs):
         context = super(DetalleOrdenDeleteView,
