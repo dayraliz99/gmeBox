@@ -2,6 +2,7 @@ from django.db import models
 from people.models import Persona
 from django.urls import reverse
 
+
 class Empresa(models.Model):
     """
     Institución donde se implementa el sistema, se ingresa los datos básico de la institución
@@ -82,9 +83,9 @@ class OrdenMantenimiento(models.Model):
         Cliente, on_delete=models.CASCADE, related_name='ordenes')
     empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, related_name='ordenes')
-    
+
     def get_absolute_url(self):
-        return reverse('order-update', kwargs={'pk':self.pk})
+        return reverse('order-update', kwargs={'pk': self.pk})
 
 
 class DetalleOrden(models.Model):
@@ -121,7 +122,7 @@ class RevisionTecnica(models.Model):
     Detalle que ingresa un técnico sobre un equipo
     """
     fecha_revision = models.DateField(
-        verbose_name="Fecha de revisión")
+        verbose_name="Fecha de revisión", blank=True, null=True)
     descripcion = models.CharField(
         max_length=250, verbose_name='Descripción')
     tecnico = models.ForeignKey(

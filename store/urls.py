@@ -17,6 +17,15 @@ urlpatterns = [
     path('orders/<int:order_id>/details/<int:pk>/delete',
          views.DetalleOrdenDeleteView.as_view(), name='order-detail-delete'),
 
+    path('orders/<int:order_id>/details/<int:order_detail_id>/revisions',
+         views.RevisionTecnicaListView.as_view(), name='revisions'),
+    path('orders/<int:order_id>/details/<int:order_detail_id>/revisions/add',
+         views.RevisionTecnicaCreateView.as_view(), name='revision-add'),
+    path('orders/<int:order_id>/details/<int:order_detail_id>/revisions/<int:pk>',
+         views.RevisionTecnicaUpdateView.as_view(), name='revision-update'),
+    path('orders/<int:order_id>/details/<int:order_detail_id>/revisions/<int:pk>/delete',
+         views.RevisionTecnicaDeleteView.as_view(), name='revision-delete'),
+
     path('clients', views.ClienteListView.as_view(), name='clients'),
     path('clients/add/',
          views.ClienteCreateView.as_view(), name='client-add'),

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa
-from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica
+from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm
 from people.models import Usuario
 from django.http import HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
@@ -346,9 +346,10 @@ class DetalleOrdenListView(LoginRequiredMixin, ListView):
     queryset = DetalleOrden.objects.all()
 
     def get_queryset(self):
-        new_context = self.queryset
+        new_context = self.queryset.filter(
+            orden_mantenimiento__id=self.kwargs['order_id'])
         if self.request.GET.get('filter'):
-            new_context = new_context.filter(orden_mantenimiento__id=self.kwargs['order_id']).filter(
+            new_context = new_context.filter(
                 Q(nombre_equipo__icontains=self.request.GET.get('filter')))
 
         return new_context
@@ -395,6 +396,7 @@ class DetalleOrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView
         context = super(DetalleOrdenUpdateView,
                         self).get_context_data(**kwargs)
         context['order_id'] = self.kwargs['order_id']
+        context['order_detail_id'] = self.kwargs['pk']
         return context
 
 
@@ -413,7 +415,114 @@ class DetalleOrdenDeleteView(DeleteView, LoginRequiredMixin):
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
-            url = reverse_lazy('order-details')
+            url = reverse_lazy(
+                'order-details',  kwargs={'order_id': self.kwargs['order_id']})
             return HttpResponseRedirect(url)
         else:
             return super(DetalleOrdenDeleteView, self).post(request, *args, **kwargs)
+
+
+class RevisionTecnicaListView(LoginRequiredMixin, ListView):
+    """
+    Permite listar revisiones técnicas
+    **Context**
+
+    ``RevisionTecnica``
+        An instance of :model:`store.RevisionTecnica`.
+
+    **Template:**
+
+    :template:`revisionTecnica/index.html`
+    """
+    model = RevisionTecnica
+    template_name = 'revisionTecnica/index.html'
+    context_object_name = 'revisiones'
+    paginate_by = 20
+    queryset = RevisionTecnica.objects.all()
+
+    def get_queryset(self):
+        new_context = self.queryset.filter(
+            detalle_orden__id=self.kwargs['order_detail_id'])
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(
+                Q(descripcion__icontains=self.request.GET.get('filter')))
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(RevisionTecnicaListView,
+                        self).get_context_data(**kwargs)
+        context['order_id'] = self.kwargs['order_id']
+        context['order_detail_id'] = self.kwargs['order_detail_id']
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
+        return context
+
+
+class RevisionTecnicaCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    model = RevisionTecnica
+    form_class = RevisionTecnicaForm
+    paginate_position = 'Both'
+    search_fields = ['tecnico__apellido__icontains']
+    template_name = 'revisionTecnica/edit.html'
+    success_message = 'Revisión Técnica creada con exito'
+    permission_required = ('add_revisiontecnica',)
+
+    def get_success_url(self, *args, **kwargs):
+        return reverse('revisions', kwargs={'order_id': self.kwargs['order_id'], 'order_detail_id': self.kwargs['order_detail_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(RevisionTecnicaCreateView,
+                        self).get_context_data(**kwargs)
+        context['order_detail_id'] = self.kwargs['order_detail_id']
+        context['order_id'] = self.kwargs['order_id']
+        return context
+
+    def form_valid(self, form):
+        form.instance.detalle_orden_id = self.kwargs['order_detail_id']
+        return super().form_valid(form)
+
+
+class RevisionTecnicaUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = RevisionTecnica
+    form_class = RevisionTecnicaForm
+    template_name = 'revisionTecnica/edit.html'
+    success_url = reverse_lazy('revisions')
+    success_message = 'Revisión Técnica actualizada con exito'
+    permission_required = ('change_revisiontecnica',)
+
+    def get_success_url(self, *args, **kwargs):
+        return reverse('revisions', kwargs={'order_id': self.kwargs['order_id'], 'order_detail_id': self.kwargs['order_detail_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(RevisionTecnicaUpdateView,
+                        self).get_context_data(**kwargs)
+        context['order_detail_id'] = self.kwargs['order_detail_id']
+        context['order_id'] = self.kwargs['order_id']
+        return context
+
+    def form_valid(self, form):
+        form.instance.detalle_orden_id = self.kwargs['order_detail_id']
+        return super().form_valid(form)
+
+
+class RevisionTecnicaDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
+    model = RevisionTecnica
+    template_name = 'delete.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(RevisionTecnicaDeleteView,
+                        self).get_context_data(**kwargs)
+        context['order_detail_id'] = self.kwargs['order_detail_id']
+        context['order_id'] = self.kwargs['order_id']
+        return context
+
+    def get_success_url(self, **kwargs):
+        return reverse('revisions', kwargs={'order_id': self.kwargs['order_id'], 'order_detail_id': self.kwargs['order_detail_id']})
+
+    def post(self, request, *args, **kwargs):
+        if "cancel" in request.POST:
+            url = reverse('revisions', kwargs={
+                          'order_id': self.kwargs['order_id'], 'order_detail_id': self.kwargs['order_detail_id']})
+            return HttpResponseRedirect(url)
+        else:
+            return super(RevisionTecnicaDeleteView, self).post(request, *args, **kwargs)

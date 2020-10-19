@@ -1,8 +1,19 @@
-{% extends 'base.html' %} {% block title %}Órdenes de Mantenimiento{% endblock%}
+{% extends 'base.html' %} {% block title %}Asigar Técnico{% endblock%}
+{% block breadcrumbs %}
+<section class="content-header">
+  <ol class="breadcrumb float-sm-right">
+    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'order-update' order_id %}">Detalle de Órden</a></li>
+    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'order-details' order_id %}">Equipos</a></li>
+    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'order-detail-update' order_id order_detail_id %}">Detalle de Equipo</a></li>
+    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'revisions' order_id order_detail_id %}">Técnicos</a></li>
+  </ol>
+</section>
+
+{% endblock %}
 {% block content %}
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">Órdenes de Mantenimiento</h3>
+    <h3 class="card-title">Revisiones</h3>
     <div class="card-tools">
       <form action="" method="get">
         <input name="filter" value="{{filter}}" />
@@ -17,29 +28,24 @@
       <table class="table table-hover datatable table-bordered">
         <thead>
           <tr>
-            <th>Fecha de Registro</th>
-            <th>Cliente</th>
-            <th>Estado</th>
-            <th>Monto</th>
+            <th>Fecha</th>
             <th>Descripción</th>
-            <th>Acción</th>
+            <th>Técnico</th>
+            <th>Accion</th>
           </tr>
         </thead>
         <tbody>
-          {% for orden in ordenes %}
+          {% for revision in revisiones %}
           <tr>
-            <td>{{ orden.fecha_registro }}</td>
-            <td>{{ orden.cliente.nombre }} {{ orden.cliente.apellido }}</td>
-            <td>{{ orden.estado }}</td>
-            <td>{{ orden.monto_servicio }}</td>
+            <td>{{ revision.fecha_revision }}</td>
+            <td>{{ revision.descripcion }}</td>
+            <td>{{ revision.tecnico }}</td>
             <td>
-              {{ orden.descripcion }}
-            </td>
-            <td>
-              <a href="{% url 'order-update' orden.id %}">
+              <a href="{% url 'revision-update' order_id order_detail_id revision.id %}">
                 <i class="nav-icon text-success fa fa-edit"></i>
               </a>
-              <a href="{% url 'order-delete' orden.id %}"> <i class="nav-icon text-danger fa fa-trash"></i> </a>
+              <a href="{% url 'revision-delete' order_id order_detail_id revision.id %}"> <i
+                  class="nav-icon text-danger fa fa-trash"></i> </a>
             </td>
           </tr>
           {% endfor %}
@@ -69,7 +75,7 @@
         </div>
       </div>
       <div class="col-xs-12 col-sm-12 col-md-4">
-        <a class="btn btn-primary pull-right" href="{% url 'order-add' %}">
+        <a class="btn btn-primary " href="{% url 'revision-add' order_id order_detail_id %}">
           <i class="nav-icon fas fa-plus-circle"></i> Agregar
         </a>
       </div>

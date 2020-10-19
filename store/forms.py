@@ -1,5 +1,5 @@
 from django import forms
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, RevisionTecnica
 from django.forms import ModelForm
 
 
@@ -19,7 +19,7 @@ class TecnicoForm(ModelForm):
             numero_identificacion=forms.TextInput(
                 attrs={'class': 'form-control'}),
             fecha_ingreso=forms.DateInput(
-                attrs={'class': 'form-control', "type":"date"})
+                attrs={'class': 'form-control', "type": "date"})
         )
 
 
@@ -74,5 +74,22 @@ class DetalleOrdenForm(ModelForm):
             precio_servicio=forms.TextInput(
                 attrs={'class': 'form-control', 'type': 'number'}),
             observacion=forms.TextInput(attrs={'class': 'form-control'}),
-            estado=forms.TextInput(attrs={'class': 'form-control'}),
+            estado=forms.Select(attrs={'class': 'form-control'}),
+        )
+
+
+class RevisionTecnicaForm(ModelForm):
+    """
+    Formulario personalizado para crear y editar una revisión técnica.
+     **Context**
+    ``RevisionTecnica``
+        An instance of :model:`store.RevisionTecnica`.
+    """
+    class Meta:
+        model = RevisionTecnica
+        fields = ('tecnico', 'descripcion')
+        widgets = dict(
+            tecnico=forms.Select(attrs={'class': 'form-control'}),
+            descripcion=forms.TextInput(
+                attrs={'class': 'form-control'}),
         )
