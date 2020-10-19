@@ -77,7 +77,7 @@ class ManejadorUsuarios(BaseUserManager):
 class Usuario(AbstractBaseUser, PermissionsMixin):
     correo_electronico = models.EmailField(
         unique=True, blank=True)
-    is_admin = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=True)
     nombre_de_usuario = models.CharField(max_length=50, unique=True)
     persona = models.OneToOneField(

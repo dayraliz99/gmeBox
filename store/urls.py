@@ -41,5 +41,6 @@ urlpatterns = [
          views.TecnicoUpdateView.as_view(), name='technician-update'),
     path('technicians/<int:pk>/delete/',
          views.TecnicoDeleteView.as_view(), name='technician-delete'),
-
+    path('revisions', views.RevisionTecnicaPorTecnicoListView.as_view(),
+         name='revisions-by-technician'),
 ]

@@ -80,16 +80,33 @@ class DetalleOrdenForm(ModelForm):
 
 class RevisionTecnicaForm(ModelForm):
     """
-    Formulario personalizado para crear y editar una revisión técnica.
+    Formulario personalizado para asignar un técnico a un detalle de orden de mantenimiento.
      **Context**
     ``RevisionTecnica``
         An instance of :model:`store.RevisionTecnica`.
     """
     class Meta:
         model = RevisionTecnica
-        fields = ('tecnico', 'descripcion')
+        fields = ('tecnico', )
         widgets = dict(
-            tecnico=forms.Select(attrs={'class': 'form-control'}),
+            tecnico=forms.Select(
+                attrs={'class': 'form-control'}),
+        )
+
+
+class GestionarRevisionTecnicaForm(ModelForm):
+    """
+    Formulario para listar y editar una revisión de un equipo.
+     **Context**
+    ``RevisionTecnica``
+        An instance of :model:`store.RevisionTecnica`.
+    """
+    class Meta:
+        model = RevisionTecnica
+        fields = ('fecha_revision', 'descripcion')
+        widgets = dict(
+            fecha_revision=forms.DateInput(
+                attrs={'class': 'form-control'}),
             descripcion=forms.TextInput(
                 attrs={'class': 'form-control'}),
         )

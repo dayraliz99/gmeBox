@@ -7,16 +7,39 @@ from django.http import HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.urls import reverse
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import Group
+from django.core.exceptions import PermissionDenied
 
 
-class OrdenListView(LoginRequiredMixin, ListView):
+class CustomUserOnlyMixin(object):
+    """
+    Permite personalizar los permisos de acceso a las vistas
+    """
+    permissions_required = None
+
+    def has_permissions(self):
+        groups = self.request.user.groups.all()
+        for permissions_required in self.permissions_required:
+            for group in groups:
+                for permission in group.permissions.all():
+                    if permission.codename == permissions_required:
+                        return True
+        return False
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permissions():
+            raise PermissionDenied
+        return super(CustomUserOnlyMixin, self).dispatch(
+            request, *args, **kwargs)
+
+
+class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """
     Permite listar las órdenes de mantenimiento
     **Context**
@@ -33,6 +56,7 @@ class OrdenListView(LoginRequiredMixin, ListView):
     context_object_name = 'ordenes'
     paginate_by = 20
     queryset = OrdenMantenimiento.objects.all()
+    permissions_required = ('view_ordenmantenimiento',)
 
     def get_queryset(self):
         new_context = self.queryset
@@ -52,7 +76,7 @@ class OrdenListView(LoginRequiredMixin, ListView):
         return context
 
 
-class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, CreateView):
     """
     Permite crear órdenes de mantenimiento
     **Context**
@@ -68,7 +92,7 @@ class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequire
     form_class = OrdenMantenimientoForm
     template_name = 'ordenMantenimiento/edit.html'
     success_message = 'Órden creada con exito'
-    permission_required = ('add_ordenmantenimiento',)
+    permissions_required = ('add_ordenmantenimiento',)
 
     def form_valid(self, form):
         empresa = Empresa.objects.first()
@@ -78,7 +102,7 @@ class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequire
         return super().form_valid(form)
 
 
-class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, UpdateView):
     """
     Permite editar órdenes de mantenimiento
     **Context**
@@ -94,7 +118,7 @@ class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequire
     form_class = OrdenMantenimientoForm
     template_name = 'ordenMantenimiento/edit.html'
     success_message = 'Órden actualizada con exito'
-    permission_required = ('change_ordenmantenimiento',)
+    permissions_required = ('change_ordenmantenimiento',)
 
     def form_valid(self, form):
         empresa = Empresa.objects.first()
@@ -104,7 +128,7 @@ class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequire
         return super().form_valid(form)
 
 
-class OrdenDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
+class OrdenDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
     """
     Permite eliminar órdenes de mantenimiento
     **Context**
@@ -119,7 +143,7 @@ class OrdenDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
     model = OrdenMantenimiento
     template_name = 'delete.html'
     success_url = reverse_lazy('orders')
-    permission_required = ('delete_ordenmantenimiento',)
+    permissions_required = ('delete_ordenmantenimiento',)
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
@@ -129,7 +153,7 @@ class OrdenDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
             return super(OrdenDeleteView, self).post(request, *args, **kwargs)
 
 
-class ClienteListView(LoginRequiredMixin, ListView):
+class ClienteListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """
     Permite listar clientes
     **Context**
@@ -146,6 +170,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
     context_object_name = 'clientes'
     paginate_by = 20
     queryset = Cliente.objects.all()
+    permissions_required = ('view_cliente',)
 
     def get_queryset(self):
         new_context = self.queryset
@@ -163,14 +188,14 @@ class ClienteListView(LoginRequiredMixin, ListView):
         return context
 
 
-class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, CreateView):
     model = Cliente
     form_class = ClienteForm
     paginate_position = 'Both'
     search_fields = ['nombre__icontains']
     template_name = 'cliente/edit.html'
     success_message = 'Cliente creado con exito'
-    permission_required = ('add_cliente',)
+    permissions_required = ('add_cliente',)
 
     def get_success_url(self, *args, **kwargs):
         return reverse('clients')
@@ -188,13 +213,13 @@ class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequi
         return super().form_valid(form)
 
 
-class ClienteUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+class ClienteUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, UpdateView):
     model = Cliente
     form_class = ClienteForm
     template_name = 'cliente/edit.html'
     success_url = reverse_lazy('orders')
     success_message = 'Cliente actualizado con exito'
-    permission_required = ('change_cliente',)
+    permissions_required = ('change_cliente',)
 
     def get_success_url(self, *args, **kwargs):
         return reverse('client-update', kwargs={'pk': self.kwargs['pk']})
@@ -214,11 +239,11 @@ class ClienteUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequi
         return super().form_valid(form)
 
 
-class ClienteDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
+class ClienteDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
     model = Cliente
     template_name = 'delete.html'
     success_url = reverse_lazy('clients')
-    permission_required = ('delete_cliente',)
+    permissions_required = ('delete_cliente',)
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
@@ -228,7 +253,7 @@ class ClienteDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin)
             return super(ClienteDeleteView, self).post(request, *args, **kwargs)
 
 
-class TecnicoListView(LoginRequiredMixin, ListView):
+class TecnicoListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """
     Permite listar técnicos
     **Context**
@@ -245,6 +270,7 @@ class TecnicoListView(LoginRequiredMixin, ListView):
     context_object_name = 'tecnicos'
     paginate_by = 20
     queryset = Tecnico.objects.all()
+    permissions_required = ('view_tecnico',)
 
     def get_queryset(self):
         new_context = self.queryset
@@ -262,14 +288,14 @@ class TecnicoListView(LoginRequiredMixin, ListView):
         return context
 
 
-class TecnicoCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class TecnicoCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, CreateView):
     model = Tecnico
     form_class = TecnicoForm
     paginate_position = 'Both'
     search_fields = ['nombre__icontains']
     template_name = 'tecnico/edit.html'
     success_message = 'Técnico creado con exito'
-    permission_required = ('add_tecnico',)
+    permissions_required = ('add_tecnico',)
 
     def get_success_url(self, *args, **kwargs):
         return reverse('technicians')
@@ -287,13 +313,13 @@ class TecnicoCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequi
         return super().form_valid(form)
 
 
-class TecnicoUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+class TecnicoUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, UpdateView):
     model = Tecnico
     form_class = TecnicoForm
     template_name = 'tecnico/edit.html'
     success_url = reverse_lazy('technicians')
     success_message = 'Técnico actualizado con exito'
-    permission_required = ('change_tecnico',)
+    permissions_required = ('change_tecnico',)
 
     def get_success_url(self, *args, **kwargs):
         return reverse('technician-update', kwargs={'pk': self.kwargs['pk']})
@@ -313,11 +339,11 @@ class TecnicoUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequi
         return super().form_valid(form)
 
 
-class TecnicoDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
+class TecnicoDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
     model = Tecnico
     template_name = 'delete.html'
     success_url = reverse_lazy('technicians')
-    permission_required = ('delete_tecnico',)
+    permissions_required = ('delete_tecnico',)
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
@@ -327,7 +353,7 @@ class TecnicoDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin)
             return super(TecnicoDeleteView, self).post(request, *args, **kwargs)
 
 
-class DetalleOrdenListView(LoginRequiredMixin, ListView):
+class DetalleOrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """
     Permite listar detalles de órdenes de mantenimiento
     **Context**
@@ -344,6 +370,7 @@ class DetalleOrdenListView(LoginRequiredMixin, ListView):
     context_object_name = 'detalles'
     paginate_by = 10
     queryset = DetalleOrden.objects.all()
+    permissions_required = ('view_detalleOrden',)
 
     def get_queryset(self):
         new_context = self.queryset.filter(
@@ -367,10 +394,9 @@ class DetalleOrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView
     form_class = DetalleOrdenForm
     template_name = 'detalleOrden/edit.html'
     success_message = 'Detalle creado con exito'
-    success_url = reverse_lazy('order-details')
 
     def get_success_url(self):
-        return reverse_lazy('order-details', kwargs={'order_id': self.kwargs['order_id']})
+        return reverse('order-detail-update', kwargs={'order_id': self.kwargs['order_id'], 'pk': self.object.pk, })
 
     def get_context_data(self, **kwargs):
         context = super(DetalleOrdenCreateView,
@@ -422,7 +448,7 @@ class DetalleOrdenDeleteView(DeleteView, LoginRequiredMixin):
             return super(DetalleOrdenDeleteView, self).post(request, *args, **kwargs)
 
 
-class RevisionTecnicaListView(LoginRequiredMixin, ListView):
+class RevisionTecnicaListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """
     Permite listar revisiones técnicas
     **Context**
@@ -439,6 +465,7 @@ class RevisionTecnicaListView(LoginRequiredMixin, ListView):
     context_object_name = 'revisiones'
     paginate_by = 20
     queryset = RevisionTecnica.objects.all()
+    permissions_required = ('view_revisionTecnica',)
 
     def get_queryset(self):
         new_context = self.queryset.filter(
@@ -458,14 +485,14 @@ class RevisionTecnicaListView(LoginRequiredMixin, ListView):
         return context
 
 
-class RevisionTecnicaCreateView(SuccessMessageMixin, LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class RevisionTecnicaCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, CreateView):
     model = RevisionTecnica
     form_class = RevisionTecnicaForm
     paginate_position = 'Both'
     search_fields = ['tecnico__apellido__icontains']
     template_name = 'revisionTecnica/edit.html'
     success_message = 'Revisión Técnica creada con exito'
-    permission_required = ('add_revisiontecnica',)
+    permissions_required = ('add_revisiontecnica',)
 
     def get_success_url(self, *args, **kwargs):
         return reverse('revisions', kwargs={'order_id': self.kwargs['order_id'], 'order_detail_id': self.kwargs['order_detail_id']})
@@ -482,13 +509,13 @@ class RevisionTecnicaCreateView(SuccessMessageMixin, LoginRequiredMixin, Permiss
         return super().form_valid(form)
 
 
-class RevisionTecnicaUpdateView(SuccessMessageMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+class RevisionTecnicaUpdateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRequiredMixin, UpdateView):
     model = RevisionTecnica
     form_class = RevisionTecnicaForm
     template_name = 'revisionTecnica/edit.html'
     success_url = reverse_lazy('revisions')
     success_message = 'Revisión Técnica actualizada con exito'
-    permission_required = ('change_revisiontecnica',)
+    permissions_required = ('change_revisiontecnica',)
 
     def get_success_url(self, *args, **kwargs):
         return reverse('revisions', kwargs={'order_id': self.kwargs['order_id'], 'order_detail_id': self.kwargs['order_detail_id']})
@@ -505,7 +532,7 @@ class RevisionTecnicaUpdateView(SuccessMessageMixin, PermissionRequiredMixin, Lo
         return super().form_valid(form)
 
 
-class RevisionTecnicaDeleteView(DeleteView, LoginRequiredMixin, PermissionRequiredMixin):
+class RevisionTecnicaDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
     model = RevisionTecnica
     template_name = 'delete.html'
 
@@ -526,3 +553,40 @@ class RevisionTecnicaDeleteView(DeleteView, LoginRequiredMixin, PermissionRequir
             return HttpResponseRedirect(url)
         else:
             return super(RevisionTecnicaDeleteView, self).post(request, *args, **kwargs)
+
+
+class RevisionTecnicaPorTecnicoListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
+    """
+    Permite listar revisiones técnicas
+    **Context**
+
+    ``RevisionTecnica``
+        An instance of :model:`store.RevisionTecnica`.
+
+    **Template:**
+
+    :template:`tecnico/revisionTecnica/index.html`
+    """
+    model = RevisionTecnica
+    template_name = 'tecnico/revisionTecnica/index.html'
+    context_object_name = 'revisiones'
+    paginate_by = 20
+    queryset = RevisionTecnica.objects.all()
+    permissions_required = ('view_revisiontecnica',)
+
+    def get_queryset(self):
+        new_context = self.queryset.all()
+        if self.request.user.persona:
+            new_context = new_context.filter(
+                tecnico__id=self.request.user.persona_id)
+            if self.request.GET.get('filter'):
+                new_context = new_context.filter(
+                    Q(descripcion__icontains=self.request.GET.get('filter')))
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(RevisionTecnicaPorTecnicoListView,
+                        self).get_context_data(**kwargs)
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
+        return context
