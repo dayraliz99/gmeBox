@@ -24,6 +24,10 @@ class CustomUserOnlyMixin(object):
     permissions_required = None
 
     def has_permissions(self):
+        if self.request.user.is_active is False:
+            return False
+        if self.request.user.is_superuser:
+            return True
         groups = self.request.user.groups.all()
         for permissions_required in self.permissions_required:
             for group in groups:
