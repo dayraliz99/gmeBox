@@ -208,7 +208,7 @@ class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
         cleaned_data = form.clean()
         group = Group.objects.get(name='CLIENTE')
         usuario = Usuario(nombre_de_usuario=cleaned_data.get("correo_electronico"),
-                          is_staff=1, correo_electronico=cleaned_data.get("correo_electronico"))
+                          is_staff=1, is_active=True, correo_electronico=cleaned_data.get("correo_electronico"))
         client = form.save()
         usuario.persona_id = client.id
         usuario.password = make_password(form.instance.numero_identificacion)
@@ -308,7 +308,7 @@ class TecnicoCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
         cleaned_data = form.clean()
         group = Group.objects.get(name='TECNICO')
         usuario = Usuario(nombre_de_usuario=cleaned_data.get("correo_electronico"),
-                          is_staff=1, correo_electronico=cleaned_data.get("correo_electronico"))
+                          is_staff=1, is_active=True, correo_electronico=cleaned_data.get("correo_electronico"))
         tecnico = form.save()
         usuario.persona_id = tecnico.id
         usuario.password = make_password(form.instance.numero_identificacion)
