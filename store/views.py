@@ -577,3 +577,14 @@ class RevisionTecnicaPorTecnicoUpdateView(SuccessMessageMixin, CustomUserOnlyMix
     success_url = reverse_lazy('revisions-by-technician')
     success_message = 'Revisión Técnica actualizada con exito'
     permissions_required = ('change_revisiontecnica',)
+    
+    def get_initial(self):
+        initial = super(RevisionTecnicaPorTecnicoUpdateView, self).get_initial()
+        initial['estado'] = self.object.detalle_orden.estado
+        return initial
+    def form_valid(self, form):
+        cleaned_data = form.clean()
+        detalle = DetalleOrden.objects.get(id=form.instance.detalle_orden_id)
+        detalle.estado = cleaned_data.get("estado")
+        detalle.save()
+        return super().form_valid(form)

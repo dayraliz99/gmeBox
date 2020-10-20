@@ -101,12 +101,22 @@ class GestionarRevisionTecnicaForm(ModelForm):
     ``RevisionTecnica``
         An instance of :model:`store.RevisionTecnica`.
     """
+    ESTADO = (
+        ('EN_REVISION', 'En revisión'),
+        ('REVISADO', 'Revisado'),
+        ('Arregado', 'Arreglado'),
+    )
+    estado = forms.ChoiceField(
+        choices=ESTADO,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = RevisionTecnica
-        fields = ('fecha_revision', 'descripcion')
+        fields = ('fecha_revision', 'descripcion',)
         widgets = dict(
             fecha_revision=forms.DateInput(
-                attrs={'class': 'form-control', "type":"date"}),
+                attrs={'class': 'form-control', "type": "date"}),
             descripcion=forms.Textarea(
                 attrs={'class': 'form-control'}),
         )
