@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica
-from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm
+from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm, GestionarRevisionTecnicaForm
 from people.models import Usuario
 from django.http import HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
@@ -14,33 +14,7 @@ from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import Group
-from django.core.exceptions import PermissionDenied
-
-
-class CustomUserOnlyMixin(object):
-    """
-    Permite personalizar los permisos de acceso a las vistas
-    """
-    permissions_required = None
-
-    def has_permissions(self):
-        if self.request.user.is_active is False:
-            return False
-        if self.request.user.is_superuser:
-            return True
-        groups = self.request.user.groups.all()
-        for permissions_required in self.permissions_required:
-            for group in groups:
-                for permission in group.permissions.all():
-                    if permission.codename == permissions_required:
-                        return True
-        return False
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permissions():
-            raise PermissionDenied
-        return super(CustomUserOnlyMixin, self).dispatch(
-            request, *args, **kwargs)
+from utils.views import CustomUserOnlyMixin
 
 
 class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
@@ -594,3 +568,12 @@ class RevisionTecnicaPorTecnicoListView(LoginRequiredMixin, CustomUserOnlyMixin,
         context['filter'] = self.request.GET.get(
             'filter') if self.request.GET.get('filter') else ''
         return context
+
+
+class RevisionTecnicaPorTecnicoUpdateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRequiredMixin, UpdateView):
+    model = RevisionTecnica
+    form_class = GestionarRevisionTecnicaForm
+    template_name = 'tecnico/revisionTecnica/edit.html'
+    success_url = reverse_lazy('revisions-by-technician')
+    success_message = 'Revisión Técnica actualizada con exito'
+    permissions_required = ('change_revisiontecnica',)

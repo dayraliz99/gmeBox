@@ -1,22 +1,9 @@
 {% extends 'base.html' %}
-{% block breadcrumbs %}
-<section class="content-header">
-  <ol class="breadcrumb float-sm-right">
-    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'order-update' order_id %}">Detalle de Orden</a></li>
-    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'order-details' order_id %}">Equipos</a></li>
-    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'order-detail-update' order_id order_detail_id %}">Detalle de Equipo</a></li>
-    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'revisions' order_id order_detail_id %}">Técnicos</a></li>
-    {% if object%}<li class="breadcrumb-item"><a class="link-visited" href="{% url 'revision-update' order_id order_detail_id object.pk %}">Detalle de Técnico</a></li>
-    {% endif%}
-  </ol>
-</section>
-
-{% endblock %}
 {% block content_block_wrap %}
 <form method="POST">
   <div class="card">
     <div class="card-header">
-      <h3 class="card-title">Editar Detalle</h3>
+      <h3 class="card-title">Editar Revisión</h3>
     </div>
     <div class="card-body">
       {% csrf_token %} {{ form}}

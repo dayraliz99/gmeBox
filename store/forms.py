@@ -106,7 +106,7 @@ class GestionarRevisionTecnicaForm(ModelForm):
         fields = ('fecha_revision', 'descripcion')
         widgets = dict(
             fecha_revision=forms.DateInput(
-                attrs={'class': 'form-control'}),
-            descripcion=forms.TextInput(
+                attrs={'class': 'form-control', "type":"date"}),
+            descripcion=forms.Textarea(
                 attrs={'class': 'form-control'}),
         )

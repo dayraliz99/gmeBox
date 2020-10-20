@@ -34,7 +34,10 @@
             <td>{{ revision.fecha_revision }}</td>
             <td>{{ revision.descripcion }}</td>
             <td>
-            
+              <a href="{% url 'revision-by-technician-update' revision.id %}">
+                <i class="nav-icon text-success fa fa-edit"></i>
+              </a>
+              </td>
           </tr>
           {% endfor %}
         </tbody>
