@@ -103,6 +103,7 @@ class OrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMix
         if empresa is None:
             raise ValidationError("Debe agregar datos de empresa")
         form.instance.empresa_id = empresa.id
+        form.instance.calcular_monto()
         return super().form_valid(form)
 
 
@@ -383,7 +384,11 @@ class DetalleOrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView
         return context
 
     def form_valid(self, form):
-        form.instance.orden_mantenimiento_id = self.kwargs['order_id']
+        orden = OrdenMantenimiento.objects.get(id=self.kwargs['order_id'])
+        form.instance.orden_mantenimiento_id = orden.id
+        form.save()
+        orden.calcular_monto()
+        orden.save()
         return super().form_valid(form)
 
 
@@ -402,6 +407,13 @@ class DetalleOrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView
         context['order_id'] = self.kwargs['order_id']
         context['order_detail_id'] = self.kwargs['pk']
         return context
+
+    def form_valid(self, form):
+        form.save()
+        orden = OrdenMantenimiento.objects.get(id=self.kwargs['order_id'])
+        orden.calcular_monto()
+        orden.save()
+        return super().form_valid(form)
 
 
 class DetalleOrdenDeleteView(DeleteView, LoginRequiredMixin):
@@ -423,6 +435,12 @@ class DetalleOrdenDeleteView(DeleteView, LoginRequiredMixin):
                 'order-details',  kwargs={'order_id': self.kwargs['order_id']})
             return HttpResponseRedirect(url)
         else:
+            detalle = DetalleOrden.objects.get(id=self.kwargs['pk'])
+
+            orden = OrdenMantenimiento.objects.get(id=self.kwargs['order_id'])
+            orden.calcular_monto()
+            orden.monto_servicio = orden.monto_servicio - detalle.precio_servicio
+            orden.save()
             return super(DetalleOrdenDeleteView, self).post(request, *args, **kwargs)
 
 
@@ -484,6 +502,16 @@ class RevisionTecnicaCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomU
 
     def form_valid(self, form):
         form.instance.detalle_orden_id = self.kwargs['order_detail_id']
+        detalle = DetalleOrden.objects.get(id=self.kwargs['order_detail_id'])
+        detalle.estado = 'EN_REVISION'
+        detalle.save()
+        orden = OrdenMantenimiento.objects.get(
+            id=detalle.orden_mantenimiento_id)
+        if orden.verificar_estado_detalles('EN_REVISION'):
+            orden.estado = 'EN_REVISION'
+        else:
+            orden.estado = 'NUEVO'
+        orden.save()
         return super().form_valid(form)
 
 
@@ -577,14 +605,23 @@ class RevisionTecnicaPorTecnicoUpdateView(SuccessMessageMixin, CustomUserOnlyMix
     success_url = reverse_lazy('revisions-by-technician')
     success_message = 'Revisión Técnica actualizada con exito'
     permissions_required = ('change_revisiontecnica',)
-    
+
     def get_initial(self):
-        initial = super(RevisionTecnicaPorTecnicoUpdateView, self).get_initial()
+        initial = super(RevisionTecnicaPorTecnicoUpdateView,
+                        self).get_initial()
         initial['estado'] = self.object.detalle_orden.estado
         return initial
+
     def form_valid(self, form):
         cleaned_data = form.clean()
         detalle = DetalleOrden.objects.get(id=form.instance.detalle_orden_id)
         detalle.estado = cleaned_data.get("estado")
         detalle.save()
+        orden = OrdenMantenimiento.objects.get(
+            id=detalle.orden_mantenimiento_id)
+        if orden.verificar_estado_detalles(cleaned_data.get("estado")):
+            orden.estado = cleaned_data.get("estado")
+        else:
+            orden.estado = "EN_REVISION"
+        orden.save()
         return super().form_valid(form)

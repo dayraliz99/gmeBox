@@ -87,6 +87,21 @@ class OrdenMantenimiento(models.Model):
     def get_absolute_url(self):
         return reverse('order-update', kwargs={'pk': self.pk})
 
+    def verificar_estado_detalles(self, estado):
+        """
+        Permite verificar el estado actual de todos los detalles de la orden.
+        """
+        if self.detalles.count() == 0:
+            return False
+
+        for detalle in self.detalles.all():
+            if detalle.estado != estado:
+                return False
+        return True
+
+    def calcular_monto(self):
+        self.monto_servicio= sum(map(lambda detalle: detalle.precio_servicio, self.detalles.all()))
+
 
 class DetalleOrden(models.Model):
     """
