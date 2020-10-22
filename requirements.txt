@@ -5,4 +5,4 @@ django-material
 django-nested-admin
 django-adminlte3
 docutils
-weasyprint
+django-weasyprint

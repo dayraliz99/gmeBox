@@ -1,0 +1,14 @@
+<h3 class="text-center">{{ titulo }}</h3>
+<h4 class="text-center">{{ subtitulo }}</h4>
+<table class="table table-bordered">
+    <tr>
+        <th>Asunto:</th>
+        <td>{{ asunto }}</td>
+        <th>Impresión:</th>
+        <td>{{ fecha }}</td>
+    </tr>
+    <tr>
+        <th>Usuario:</th>
+        <td>{{ request.user }}</td>
+    </tr>
+</table>

@@ -1,0 +1,28 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    <title>{% if title %} {{ title }} {% else %} Reporte {% endif %}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style type="text/css" media="screen, print">
+        @page {
+            size: {% if size %} {{ size }} {% else %} 'A4' {% endif %};
+            margin: {% if margin %} {{ margin }} {% else %} 2cm 2cm 2cm 2cm {% endif %};
+
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 80%
+            }
+            @bottom-left {
+                text-align: right;
+                content: "Sistema de Gestión de Mantenimiento de Equipos (GmeBox)";
+                font-size: 80%
+            }
+        }
+    </style>
+</head>
+<body>
+</body>
+</html>

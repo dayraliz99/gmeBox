@@ -1,4 +1,5 @@
 {% extends 'base.html' %} {% block title %}Órdenes de Mantenimiento{% endblock%}
+{% load page_extras %}
 {% block content %}
 <div class="card">
   <div class="card-header">
@@ -36,10 +37,18 @@
               {{ orden.descripcion }}
             </td>
             <td>
+              {% has_permission request.user 'update_tecnico' as has_permission_update %}
+              {% if has_permission_update %}
               <a href="{% url 'order-update' orden.id %}">
                 <i class="nav-icon text-success fa fa-edit"></i>
               </a>
+              {%endif%}
+              {% has_permission request.user 'delete_tecnico' as has_permission_delete %}
+              {% if has_permission_delete %}
               <a href="{% url 'order-delete' orden.id %}"> <i class="nav-icon text-danger fa fa-trash"></i> </a>
+              {%endif%}
+              <a title="Imprimir Detalle" href="{% url 'order-download' orden.id %}"> <i class="nav-icon text-info fa fa-print"></i> </a>
+              <a title="Confirmar arreglo" href="#"> <i class="nav-icon text-pink fa fa-check-circle"></i> </a>
             </td>
           </tr>
           {% endfor %}
@@ -69,7 +78,7 @@
         </div>
       </div>
       <div class="col-xs-12 col-sm-12 col-md-4">
-        <a  style="float: right" class="btn btn-primary pull-right" href="{% url 'order-add' %}">
+        <a style="float: right" class="btn btn-primary pull-right" href="{% url 'order-add' %}">
           <i class="nav-icon fas fa-plus-circle"></i> Agregar
         </a>
       </div>

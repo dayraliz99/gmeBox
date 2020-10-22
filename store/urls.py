@@ -7,6 +7,8 @@ urlpatterns = [
     path('orders/<int:pk>/', views.OrdenUpdateView.as_view(), name='order-update'),
     path('orders/<int:pk>/delete/',
          views.OrdenDeleteView.as_view(), name='order-delete'),
+    path('orders/<int:pk>/download/',
+         views.OrdenDownloadView.as_view(), name='order-download'),
 
     path('orders/<int:order_id>/details/',
          views.DetalleOrdenListView.as_view(), name='order-details'),

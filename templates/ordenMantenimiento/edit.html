@@ -20,16 +20,20 @@
 
     </div>
     <div class="card-footer">
-      <div>
-        <button class="btn btn-success" type="submit">
-          <i class="nav-icon fas fa-save"></i> {% if object == None%}Crear{% else %}Actualizar{% endif %}
-        </button>
-        <div style="text-align: right; font-size: 2rem; font-weight: bolder;">
-          {%if object is not None%} $ {{object.monto_servicio}}
-          {%endif%}
+      <div class="row">
+        <div class="col col-sm-12 col-xs-12 col-md-8">
+          <button class="btn btn-success" type="submit">
+            <i class="nav-icon fas fa-save"></i> {% if object == None%}Crear{% else %}Actualizar{% endif %}
+          </button>
         </div>
-      </div>
+        <div>
+          <label style="text-align: right; font-size: 2rem; font-weight: bolder;">
+            {%if object is not None%} $ {{object.monto_servicio}}
+            {%endif%}
+          </label>
+        </div>
 
+      </div>
     </div>
   </div>
 

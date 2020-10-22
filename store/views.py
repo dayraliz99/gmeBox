@@ -8,14 +8,16 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.urls import reverse
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import Group
 from utils.views import CustomUserOnlyMixin
-
+from django_weasyprint import WeasyTemplateResponseMixin
+from django_weasyprint.views import CONTENT_TYPE_PNG
+from datetime import datetime
 
 class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """
@@ -52,6 +54,23 @@ class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
         context['filter'] = self.request.GET.get(
             'filter') if self.request.GET.get('filter') else ''
         return context
+
+
+class OrdenDetailView(LoginRequiredMixin, CustomUserOnlyMixin, DetailView):
+    model = OrdenMantenimiento
+    permissions_required = ('view_ordenmantenimiento',)
+    template_name = 'ordenMantenimiento/detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenDetailView, self).get_context_data(**kwargs)
+        context['title'] = "Detalle de Órden"
+        context['asunto'] = "Órden de Mantenimiento"
+        context['fecha'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return context
+
+
+class OrdenDownloadView(WeasyTemplateResponseMixin, OrdenDetailView):
+    pdf_filename = 'detalle.pdf'
 
 
 class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, CreateView):
