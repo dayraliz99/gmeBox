@@ -223,7 +223,7 @@ class Compra (models.Model):
         ('POR_PAGAR', 'Por pagar'),
         ('PAGADO', 'Pagado'),
     )
-    fechaCompra = models.DateField(
+    fecha_compra = models.DateField(
         verbose_name="Fecha de compra")
     subtotal = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='SubTotal')

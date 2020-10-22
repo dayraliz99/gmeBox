@@ -1,5 +1,5 @@
 from django import forms
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, RevisionTecnica
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, RevisionTecnica, Factura
 from django.forms import ModelForm
 
 
@@ -29,11 +29,30 @@ class OrdenMantenimientoForm(ModelForm):
     """
     class Meta:
         model = OrdenMantenimiento
-        fields = ('cliente', 'descripcion', 'estado', )
+        fields = ('cliente', 'descripcion',)
         widgets = dict(
-            estado=forms.Select(attrs={'class': 'form-control'}),
             cliente=forms.Select(attrs={'class': 'form-control'}),
             descripcion=forms.TextInput(attrs={'class': 'form-control'}),
+        )
+
+
+class DetalleOrdenForm(ModelForm):
+    """
+    Formulario personalizado para crear y editar un detalle de orden de mantenimiento.
+     **Context**
+    ``DetalleOrden``
+        An instance of :model:`store.DetalleOrden`.
+    """
+    class Meta:
+        model = DetalleOrden
+        fields = ('nombre_equipo', 'precio_servicio',
+                  'observacion', 'estado', )
+        widgets = dict(
+            nombre_equipo=forms.TextInput(attrs={'class': 'form-control'}),
+            precio_servicio=forms.TextInput(
+                attrs={'class': 'form-control', 'type': 'number'}),
+            observacion=forms.TextInput(attrs={'class': 'form-control'}),
+            estado=forms.Select(attrs={'class': 'form-control'}),
         )
 
 
@@ -64,26 +83,6 @@ class ClienteForm(ModelForm):
             apellido=forms.TextInput(attrs={'class': 'form-control'}),
             numero_identificacion=forms.TextInput(
                 attrs={'class': 'form-control'})
-        )
-
-
-class DetalleOrdenForm(ModelForm):
-    """
-    Formulario personalizado para crear y editar un detalle de orden de mantenimiento.
-     **Context**
-    ``DetalleOrden``
-        An instance of :model:`store.DetalleOrden`.
-    """
-    class Meta:
-        model = DetalleOrden
-        fields = ('nombre_equipo', 'precio_servicio',
-                  'observacion', 'estado', )
-        widgets = dict(
-            nombre_equipo=forms.TextInput(attrs={'class': 'form-control'}),
-            precio_servicio=forms.TextInput(
-                attrs={'class': 'form-control', 'type': 'number'}),
-            observacion=forms.TextInput(attrs={'class': 'form-control'}),
-            estado=forms.Select(attrs={'class': 'form-control'}),
         )
 
 
@@ -128,4 +127,22 @@ class GestionarRevisionTecnicaForm(ModelForm):
                 attrs={'class': 'form-control', "type": "date"}),
             descripcion=forms.Textarea(
                 attrs={'class': 'form-control'}),
+        )
+
+
+class FacturaForm(ModelForm):
+    """
+    Formulario personalizado para crear y editar una factura.
+    """
+    class Meta:
+        model = Factura
+        fields = ('cliente', 'estado',
+                  'fechaVenta', 'empresa',)
+        widgets = dict(
+            cliente=forms.Select(
+                attrs={'class': 'form-control'}),
+            empresa=forms.Select(
+                attrs={'class': 'form-control'}),
+            fecha_venta=forms.TextInput(
+                attrs={'class': 'form-control', "type": "date"}),
         )

@@ -16,8 +16,9 @@ from django.http import HttpResponseRedirect
 from people.models import Usuario
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica
-from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm, GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica, Factura
+from store.forms import (OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm,
+                         GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm, FacturaForm)
 
 
 class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
@@ -97,6 +98,7 @@ class OrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMix
         if empresa is None:
             raise ValidationError("Debe agregar datos de empresa")
         form.instance.empresa_id = empresa.id
+        form.instance.estado = "NUEVO"
         return super().form_valid(form)
 
 
@@ -676,3 +678,137 @@ class RevisionTecnicaPorTecnicoUpdateView(SuccessMessageMixin, CustomUserOnlyMix
             orden.estado = "EN_REVISION"
         orden.save()
         return super().form_valid(form)
+
+
+class FacturaListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
+    """
+    Permite listar facturas
+    **Context**
+
+    ``Factura``
+        An instance of :model:`store.Factura`.
+
+    **Template:**
+
+    :template:`factura/index.html`
+    """
+    model = Factura
+    template_name = 'factura/index.html'
+    context_object_name = 'facturas'
+    paginate_by = 20
+    queryset = Factura.objects.all()
+    permissions_required = ('view_factura',)
+
+    def get_queryset(self):
+        new_context = self.queryset
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(Q(
+                cliente__apellido__icontains=self.request.GET.get('filter')) | Q(
+                cliente__nombre__icontains=self.request.GET.get('filter')) | Q(
+                cliente__numero_identificacion__icontains=self.request.GET.get('filter')))
+
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturaListView, self).get_context_data(**kwargs)
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
+        return context
+
+
+class FacturaDetailView(LoginRequiredMixin, CustomUserOnlyMixin, DetailView):
+    model = Factura
+    permissions_required = ('view_factura',)
+    template_name = 'factura/detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenDetailView, self).get_context_data(**kwargs)
+        context['title'] = "Factura"
+        context['asunto'] = "Factura"
+        context['fecha'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return context
+
+
+class FacturaDownloadView(WeasyTemplateResponseMixin, FacturaDetailView):
+    pdf_filename = 'factura.pdf'
+
+
+class FacturaCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, CreateView):
+    """
+    Permite crear facturas
+    **Context**
+
+    ``Factura``
+        An instance of :model:`store.Factura`.
+
+    **Template:**
+
+    :template:`factura/edit.html`
+    """
+    model = Factura
+    form_class = FacturaForm
+    template_name = 'factura/edit.html'
+    success_message = 'Factura creada con exito'
+    permissions_required = ('add_factura',)
+
+    def form_valid(self, form):
+        empresa = Empresa.objects.first()
+        if empresa is None:
+            raise ValidationError("Debe agregar datos de empresa")
+        form.instance.empresa_id = empresa.id
+        form.instance.estado = "POR_PAGAR"
+        return super().form_valid(form)
+
+
+class FacturaUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, UpdateView):
+    """
+    Permite editar facturas
+    **Context**
+
+    ``Factura``
+        An instance of :model:`store.Factura`.
+
+    **Template:**
+
+    :template:`factura/edit.html`
+    """
+    model = Factura
+    form_class = FacturaForm
+    template_name = 'factura/edit.html'
+    success_message = 'Factura actualizada con exito'
+    permissions_required = ('change_factura',)
+
+    def form_valid(self, form):
+        empresa = Empresa.objects.first()
+        if empresa is None:
+            raise ValidationError("Debe agregar datos de empresa")
+        form.instance.empresa_id = empresa.id
+        form.instance.subtotal()
+        form.instance.impuesto()
+        form.instance.total()
+        return super().form_valid(form)
+
+
+class FacturaDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
+    """
+    Permite eliminar facturas
+    **Context**
+
+    ``Factura``
+        An instance of :model:`store.Factura`.
+
+    **Template:**
+
+    :template:`delete.html`
+    """
+    model = Factura
+    template_name = 'delete.html'
+    success_url = reverse_lazy('invoices')
+    permissions_required = ('delete_factura',)
+
+    def post(self, request, *args, **kwargs):
+        if "cancel" in request.POST:
+            url = reverse_lazy('invoices')
+            return HttpResponseRedirect(url)
+        else:
+            return super(FacturaDeleteView, self).post(request, *args, **kwargs)

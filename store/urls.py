@@ -50,4 +50,14 @@ urlpatterns = [
          name='revisions-by-technician'),
     path('revisions/<int:pk>', views.RevisionTecnicaPorTecnicoUpdateView.as_view(),
          name='revision-by-technician-update'),
+
+    path('invoices', views.FacturaListView.as_view(),
+         name='invoices'),
+    path('invoices/add/', views.FacturaCreateView.as_view(), name='invoice-add'),
+    path('invoices/<int:pk>/', views.FacturaUpdateView.as_view(),
+         name='invoice-update'),
+    path('invoices/<int:pk>/delete/',
+         views.FacturaDeleteView.as_view(), name='invoice-delete'),
+    path('invoices/<int:pk>/download/',
+         views.FacturaDownloadView.as_view(), name='invoice-download'),
 ]

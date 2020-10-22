@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.admindocs',
     'adminlte3',
     'adminlte3_theme',
+    'nested_admin',
     'people',
     'store'
 ]

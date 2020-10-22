@@ -71,6 +71,15 @@
           </a>
         </li>
         {%endif%}
+        {% has_permission request.user 'view_factura' as has_permission_factura %}
+        {% if has_permission_factura %}
+        <li class="nav-item">
+          <a href="{% url 'invoices' %}" class="nav-link">
+            <i class="nav-icon fas fa-file-invoice"></i>
+            <p>Facturas</p>
+          </a>
+        </li>
+        {%endif%}
         {% comment %} <li class="nav-item has-tree-view">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-object-group"></i>

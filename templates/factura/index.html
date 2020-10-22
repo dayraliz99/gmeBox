@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load page_extras %}
+{% block title %}Facturas{% endblock%}
+{% block breadcrumbs %}
+<section class="content-header">
+  <ol class="breadcrumb float-sm-right">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+    <li class="breadcrumb-item active">Facturas</li>
+  </ol>
+</section>
+
+{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Facturas</h3>
+    <div class="card-tools">
+      <form action="" method="get">
+        <input name="filter" value="{{filter}}" />
+        <button class="btn btn-primary" type="submit">
+          <i class="nav-icon fas fa-search"></i> Buscar
+        </button>
+      </form>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover datatable table-bordered">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Número de Identificación</th>
+            <th>Correo electrónico</th>
+            <th>SubTotal</th>
+            <th>Impuesto</th>
+            <th>Total</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for factura in facturas %}
+          <tr>
+            <td>{{ factura.cliente.nombre }}</td>
+            <td>{{ factura.cliente.apellido }}</td>
+            <td>{{ factura.cliente.numero_identificacion }}</td>
+            <td>{{ factura.cliente.usuario.correo_electronico }}</td>
+            <td>{{ factura.subtotal }}</td>
+            <td>{{ factura.impuesto }}</td>
+            <td>{{ factura.total }}</td>
+            <td>
+              {% has_permission request.user 'update_factura' as has_permission_update %}
+              {% if has_permission_update %}
+              <a href="{% url 'invoice-update' factura.id %}">
+                <i class="nav-icon text-success fa fa-edit"></i>
+              </a>
+              {%endif%}
+
+              {% has_permission request.user 'delete_factura' as has_permission_delete %}
+              {% if has_permission_delete %}
+              <a href="{% url 'invoice-delete' factura.id %}">
+                <i class="nav-icon text-danger fa fa-trash"></i>
+              </a>
+              {%endif%}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-8">
+        <div class="pagination">
+          <span class="step-links">
+            {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
