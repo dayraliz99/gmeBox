@@ -47,8 +47,12 @@
               {% if has_permission_delete %}
               <a href="{% url 'order-delete' orden.id %}"> <i class="nav-icon text-danger fa fa-trash"></i> </a>
               {%endif%}
-              <a title="Imprimir Detalle" href="{% url 'order-download' orden.id %}"> <i class="nav-icon text-info fa fa-print"></i> </a>
-              <a title="Confirmar arreglo" href="#"> <i class="nav-icon text-pink fa fa-check-circle"></i> </a>
+              <a title="Imprimir Detalle" href="{% url 'order-download' orden.id %}"> <i
+                  class="nav-icon text-info fa fa-print"></i> </a>
+              {% if has_permission_update and orden.estado == "REVISADO" %}
+              <a title="Confirmar arreglo" href="{% url 'order-confirm' orden.id %}"> <i
+                  class="nav-icon text-pink fa fa-check-circle"></i> </a>
+              {%endif%}
             </td>
           </tr>
           {% endfor %}

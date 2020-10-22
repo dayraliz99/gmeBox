@@ -1,23 +1,24 @@
+from datetime import datetime
+from django_weasyprint.views import CONTENT_TYPE_PNG
+from django_weasyprint import WeasyTemplateResponseMixin
+from utils.views import CustomUserOnlyMixin
+from django.contrib.auth.models import Group
+from django.contrib.auth.hashers import check_password, make_password
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.urls import reverse
+from django.views.generic import ListView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.urls import reverse_lazy
+from django.contrib.messages.views import SuccessMessageMixin
+from django.http import HttpResponseRedirect
+from people.models import Usuario
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica
-from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm, GestionarRevisionTecnicaForm
-from people.models import Usuario
-from django.http import HttpResponseRedirect
-from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView
-from django.urls import reverse
-from django.db.models import Q
-from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import check_password, make_password
-from django.contrib.auth.models import Group
-from utils.views import CustomUserOnlyMixin
-from django_weasyprint import WeasyTemplateResponseMixin
-from django_weasyprint.views import CONTENT_TYPE_PNG
-from datetime import datetime
+from store.forms import OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm, GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm
+
 
 class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """
@@ -149,6 +150,37 @@ class OrdenDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
             return HttpResponseRedirect(url)
         else:
             return super(OrdenDeleteView, self).post(request, *args, **kwargs)
+
+
+class OrdenConfirm(UpdateView, LoginRequiredMixin, CustomUserOnlyMixin):
+    """
+    Permite confirmar soporte órdenes de mantenimiento
+    **Context**
+
+    ``OrdenMantenimiento``
+        An instance of :model:`store.OrdenMantenimiento`.
+
+    **Template:**
+
+    :template:`ordenMantenimiento/confirmSupport.html`
+    """
+    model = OrdenMantenimiento
+    form_class = OrdenMantenimientoConfirmarForm
+    template_name = 'ordenMantenimiento/confirmSupport.html'
+    success_url = reverse_lazy('orders')
+    success_message = 'Órden confirmada con exito'
+    permissions_required = ('change_ordenmantenimiento',)
+
+    def post(self, request, *args, **kwargs):
+        if "cancel" in request.POST:
+            url = reverse_lazy('orders')
+            return HttpResponseRedirect(url)
+        return super(OrdenConfirm, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.confirmar()
+        form.instance.estado = "CONFIRMADO"
+        return super().form_valid(form)
 
 
 class ClienteListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):

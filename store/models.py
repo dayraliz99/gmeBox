@@ -1,6 +1,7 @@
 from django.db import models
 from people.models import Persona
 from django.urls import reverse
+from datetime import datetime
 
 
 class Empresa(models.Model):
@@ -65,6 +66,7 @@ class OrdenMantenimiento(models.Model):
         ('NUEVO', 'Nuevo'),
         ('EN_REVISION', 'En revisión'),
         ('REVISADO', 'Revisado'),
+        ('CONFIRMADO', 'Confirmado'),
         ('FINALIZADO', 'Finalizado'),
     )
     fecha_registro = models.DateField(
@@ -100,7 +102,25 @@ class OrdenMantenimiento(models.Model):
         return True
 
     def calcular_monto(self):
-        self.monto_servicio= sum(map(lambda detalle: detalle.precio_servicio, self.detalles.all()))
+        self.monto_servicio = sum(
+            map(lambda detalle: detalle.precio_servicio, self.detalles.all()))
+
+    def confirmar(self):
+        factura = Factura.objects.create(fechaVenta=datetime.now(), cliente=self.cliente, empresa=self.empresa, subtotal=0.0, impuesto=0.0,
+                                         total=0.0)
+
+        for detalle in self.detalles.all():
+
+            detalle.estado = "CONFIRMADO"
+            detalle.save()
+            detalle_factura = DetalleFactura(
+                precioUnitario=detalle.precio_servicio, cantidad=1, impuesto=0.0)
+            detalle_factura.calcular_total()
+            factura.detalles.add(detalle_factura, bulk=False)
+        factura.calcular_subtotal()
+        factura.calcular_impuesto()
+        factura.calcular_total()
+        factura.save()
 
 
 class DetalleOrden(models.Model):
@@ -266,6 +286,17 @@ class Factura (models.Model):
     cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, related_name='facturas')
 
+    def calcular_subtotal(self):
+        self.subtotal = sum(
+            map(lambda detalle: detalle.precioUnitario, self.detalles.all()))
+
+    def calcular_impuesto(self):
+        self.impuesto = sum(
+            map(lambda detalle: detalle.impuesto, self.detalles.all()))
+
+    def calcular_total(self):
+        self.total = self.subtotal+self.impuesto
+
 
 class DetalleFactura (models.Model):
     """
@@ -280,6 +311,9 @@ class DetalleFactura (models.Model):
     total = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Total')
     producto = models.ForeignKey(
-        Producto, on_delete=models.CASCADE, related_name='ventas')
+        Producto, null=True, blank=True, on_delete=models.CASCADE, related_name='ventas')
     factura = models.ForeignKey(
         Factura, on_delete=models.CASCADE, related_name='detalles')
+
+    def calcular_total(self):
+        self.total = self.precioUnitario * self.cantidad

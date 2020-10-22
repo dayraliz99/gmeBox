@@ -37,6 +37,15 @@ class OrdenMantenimientoForm(ModelForm):
         )
 
 
+class OrdenMantenimientoConfirmarForm(ModelForm):
+    """
+    Formulario personalizado para crear y editar una orden de mantenimiento.
+    """
+    class Meta:
+        model = OrdenMantenimiento
+        fields = ('id',)
+
+
 class ClienteForm(ModelForm):
     """
     Formulario personalizado para crear y editar un cliente.

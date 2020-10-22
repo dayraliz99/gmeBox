@@ -26,6 +26,7 @@
             <th>Equipo</th>
             <th>Estado</th>
             <th>Descripción</th>
+            <th>Observaciones</th>
             <th>Servicio</th>
         </tr>
     </thead>
@@ -41,6 +42,11 @@
             <td>
                 {{detalle.observacion}}
             </td>
+            <td>
+                {% for revision in detalle.revisiones.all %}
+                <li>{{revision.descripcion}}</li>
+                {% endfor %}
+            </td>
             <td class="text-right">
                 {{detalle.precio_servicio}}
             </td>
@@ -48,7 +54,7 @@
         {% endfor %}
     </tbody>
     <tr class="text-right">
-        <td colspan="3"><b>TOTALES: </b></td>
+        <td colspan="4"><b>TOTALES: </b></td>
         <td>{{ object.monto_servicio }}</td>
     </tr>
     </tfoot>
