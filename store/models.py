@@ -267,7 +267,7 @@ class Factura (models.Model):
         ('POR_PAGAR', 'Por pagar'),
         ('PAGADO', 'Pagado'),
     )
-    fechaVenta = models.DateField(
+    fecha_venta = models.DateField(
         verbose_name="Fecha de compra")
     subtotal = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='SubTotal')

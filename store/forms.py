@@ -136,8 +136,7 @@ class FacturaForm(ModelForm):
     """
     class Meta:
         model = Factura
-        fields = ('cliente', 'estado',
-                  'fechaVenta', 'empresa',)
+        fields = ('cliente','fecha_venta', 'empresa',)
         widgets = dict(
             cliente=forms.Select(
                 attrs={'class': 'form-control'}),

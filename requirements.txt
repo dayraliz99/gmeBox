@@ -1,8 +1,9 @@
 Django==3.0.7
-mysqlclient==1.4.6
+psycopg2
 ipython
 django-material
 django-nested-admin
 django-adminlte3
 docutils
 django-weasyprint
+django-environ
