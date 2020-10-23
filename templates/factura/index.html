@@ -33,9 +33,11 @@
             <th>Apellido</th>
             <th>Número de Identificación</th>
             <th>Correo electrónico</th>
+            <th>Estado</th>
             <th>SubTotal</th>
             <th>Impuesto</th>
             <th>Total</th>
+            <th>Monto Pagado</th>
             <th>Acción</th>
           </tr>
         </thead>
@@ -46,9 +48,11 @@
             <td>{{ factura.cliente.apellido }}</td>
             <td>{{ factura.cliente.numero_identificacion }}</td>
             <td>{{ factura.cliente.usuario.correo_electronico }}</td>
+            <td>{{factura.estado}}</td>
             <td>{{ factura.subtotal }}</td>
             <td>{{ factura.impuesto }}</td>
             <td>{{ factura.total }}</td>
+            <td>{{factura.monto_pagado}}</td>
             <td>
               {% has_permission request.user 'update_factura' as has_permission_update %}
               {% if has_permission_update %}
@@ -62,8 +66,10 @@
               <a href="{% url 'invoice-delete' factura.id %}">
                 <i class="nav-icon text-danger fa fa-trash"></i>
               </a>
+              {% if factura.estado == "PAGADO" %}
               <a title="Imprimir Detalle" href="{% url 'invoice-download' factura.id %}"> <i
-                class="nav-icon text-info fa fa-print"></i> </a>
+                  class="nav-icon text-info fa fa-print"></i> </a>
+              {%endif%}
               {%endif%}
             </td>
           </tr>
