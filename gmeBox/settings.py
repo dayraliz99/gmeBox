@@ -25,9 +25,9 @@ environ.Env.read_env()
 SECRET_KEY = 'q)b*i76y=h0a^0_n&g=h#v$tfquzp2(skv5sy^wfd7@m6+t1w*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG"),
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [env("DJANGO_ALLOWED_HOSTS"),]
 
 
 # Application definition
