@@ -1,5 +1,5 @@
 from django import forms
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, RevisionTecnica, Factura, DetalleFactura
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, RevisionTecnica, Factura, DetalleFactura, PagoFactura
 from django.forms import ModelForm
 
 
@@ -156,11 +156,29 @@ class DetalleFacturaForm(ModelForm):
     """
     class Meta:
         model = DetalleFactura
-        fields = ('cantidad', 'producto','precioUnitario',)
+        fields = ('cantidad', 'producto', 'precio_unitario',)
         widgets = dict(
             cantidad=forms.TextInput(
                 attrs={'class': 'form-control', "type": "number"}),
-            precioUnitario=forms.TextInput(
+            precio_unitario=forms.TextInput(
                 attrs={'class': 'form-control', 'type': 'number'}),
             producto=forms.Select(attrs={'class': 'form-control'}),
+        )
+
+
+class PagoFacturaForm(ModelForm):
+    """
+    Formulario personalizado para crear y editar un pago de factura.
+     **Context**
+    ``PagoFactura``
+        An instance of :model:`store.PagoFactura`.
+    """
+    class Meta:
+        model = PagoFactura
+        fields = ('fecha_pago', 'monto',)
+        widgets = dict(
+            fecha_pago=forms.DateInput(
+                attrs={'class': 'form-control', "type": "date"}),
+            monto=forms.TextInput(
+                attrs={'class': 'form-control', 'type': 'number'}),
         )

@@ -724,10 +724,10 @@ class FacturaListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
 class FacturaDetailView(LoginRequiredMixin, CustomUserOnlyMixin, DetailView):
     model = Factura
     permissions_required = ('view_factura',)
-    template_name = 'factura/detail.html'
+    template_name = 'factura/print.html'
 
     def get_context_data(self, **kwargs):
-        context = super(OrdenDetailView, self).get_context_data(**kwargs)
+        context = super(FacturaDetailView, self).get_context_data(**kwargs)
         context['title'] = "Factura"
         context['asunto'] = "Factura"
         context['fecha'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -755,7 +755,6 @@ class FacturaCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     template_name = 'factura/edit.html'
     success_message = 'Factura creada con exito'
     permissions_required = ('add_factura',)
-
 
     def form_valid(self, form):
         empresa = Empresa.objects.first()
@@ -901,7 +900,7 @@ class DetalleFacturaListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
         return context
 
 
-class DetalleFacturaCreateView(SuccessMessageMixin,CustomUserOnlyMixin, LoginRequiredMixin, CreateView):
+class DetalleFacturaCreateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRequiredMixin, CreateView):
     model = DetalleFactura
     form_class = DetalleFacturaForm
     template_name = 'detalleFactura/edit.html'
@@ -930,7 +929,7 @@ class DetalleFacturaCreateView(SuccessMessageMixin,CustomUserOnlyMixin, LoginReq
         return super().form_valid(form)
 
 
-class DetalleFacturaUpdateView(SuccessMessageMixin,CustomUserOnlyMixin, LoginRequiredMixin, UpdateView):
+class DetalleFacturaUpdateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRequiredMixin, UpdateView):
     model = DetalleFactura
     form_class = DetalleFacturaForm
     template_name = 'detalleFactura/edit.html'
@@ -957,7 +956,7 @@ class DetalleFacturaUpdateView(SuccessMessageMixin,CustomUserOnlyMixin, LoginReq
         return super().form_valid(form)
 
 
-class DetalleFacturaDeleteView(DeleteView, CustomUserOnlyMixin,LoginRequiredMixin):
+class DetalleFacturaDeleteView(DeleteView, CustomUserOnlyMixin, LoginRequiredMixin):
     model = DetalleFactura
     template_name = 'delete.html'
     permissions_required = ('delete_detalleFactura',)

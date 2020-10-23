@@ -114,7 +114,7 @@ class OrdenMantenimiento(models.Model):
             detalle.estado = "CONFIRMADO"
             detalle.save()
             detalle_factura = DetalleFactura(
-                precioUnitario=detalle.precio_servicio, cantidad=1, impuesto=0.0)
+                precio_unitario=detalle.precio_servicio, cantidad=1, impuesto=0.0)
             detalle_factura.calcular_total()
             factura.detalles.add(detalle_factura, bulk=False)
         factura.calcular_subtotal()
@@ -254,7 +254,7 @@ class DetalleCompra (models.Model):
     """
     detalle = models.CharField(max_length=255, null=True, blank=True)
     cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
-    precioUnitario = models.DecimalField(
+    precio_unitario = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Precio Unitario')
     impuesto = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Impuesto')
@@ -324,7 +324,7 @@ class DetalleFactura (models.Model):
     """
     detalle = models.CharField(max_length=255, null=True, blank=True)
     cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
-    precioUnitario = models.DecimalField(
+    precio_unitario = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Precio Unitario', default=0.0)
     impuesto = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Impuesto', default=0.0)
@@ -336,7 +336,7 @@ class DetalleFactura (models.Model):
         Factura, on_delete=models.CASCADE, related_name='detalles')
 
     def calcular_total(self):
-        self.total = self.precioUnitario * self.cantidad
+        self.total = self.precio_unitario * self.cantidad
 
 
 class PagoFactura (models.Model):
@@ -344,7 +344,7 @@ class PagoFactura (models.Model):
     Pagos de Factura.
     """
     fecha_pago = models.DateField(verbose_name="Fecha de compra")
-    mmonto = models.DecimalField(
+    monto = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Precio Unitario', default=0.0)
     factura = models.ForeignKey(
         Factura, on_delete=models.CASCADE, related_name='pagos')

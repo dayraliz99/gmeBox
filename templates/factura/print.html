@@ -1,0 +1,63 @@
+{% include "reporte_base.html" %}
+{% include "reporte_encabezado.html" %}
+<h3>Cliente</h3>
+<table class="table table-bordered">
+    <tr>
+        <th>Nombre:</th>
+        <td>{{ object.cliente.nombre }}</td>
+    </tr>
+    <tr>
+        <th>Apellido:</th>
+        <td>{{ object.cliente.apellido }}</td>
+    </tr>
+    <tr>
+        <th>Número de Identificación:</th>
+        <td>{{ object.cliente.numero_identificacion }}</td>
+    </tr>
+    <tr>
+        <th>Correo electrónico:</th>
+        <td>{{ object.cliente.usuario.correo_electronico }}</td>
+    </tr>
+
+</table>
+<table class="table table-hover table-condensed table-striped">
+    <thead>
+        <tr>
+            <th>Detalle</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in object.detalles.all %}
+        <tr>
+            <td>
+                {{detalle.detalle}}
+            </td>
+            <td>
+                {{detalle.cantidad}}
+            </td>
+            <td>
+                {{detalle.precio_unitario}}
+            </td>
+            <td class="text-right">
+                {{detalle.total}}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tr class="text-right">
+        <td colspan="3"><b>Subtotal: </b></td>
+        <td>{{ object.subtotal }}</td>
+    </tr>
+    <tr class="text-right">
+        <td colspan="3"><b>Iva: </b></td>
+        <td>{{ object.impuesto }}</td>
+    </tr>
+    <tr class="text-right">
+        <td colspan="3"><b>Total: </b></td>
+        <td>{{ object.total }}</td>
+    </tr>
+    </tfoot>
+</table>

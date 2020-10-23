@@ -62,6 +62,8 @@
               <a href="{% url 'invoice-delete' factura.id %}">
                 <i class="nav-icon text-danger fa fa-trash"></i>
               </a>
+              <a title="Imprimir Detalle" href="{% url 'invoice-download' factura.id %}"> <i
+                class="nav-icon text-info fa fa-print"></i> </a>
               {%endif%}
             </td>
           </tr>
