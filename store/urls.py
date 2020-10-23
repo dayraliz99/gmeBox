@@ -11,6 +11,10 @@ urlpatterns = [
          views.OrdenDownloadView.as_view(), name='order-download'),
     path('orders/<int:pk>/confirm/',
          views.OrdenConfirm.as_view(), name='order-confirm'),
+    path('orders-by-client',
+         views.OrdenClienteListView.as_view(), name='orders-client'),
+    path('orders-by-client/<int:pk>',
+         views.OrdenClienteDetailView.as_view(), name='order-client-update'),
 
     path('orders/<int:order_id>/details/',
          views.DetalleOrdenListView.as_view(), name='order-details'),
@@ -60,4 +64,13 @@ urlpatterns = [
          views.FacturaDeleteView.as_view(), name='invoice-delete'),
     path('invoices/<int:pk>/download/',
          views.FacturaDownloadView.as_view(), name='invoice-download'),
+
+    path('invoices/<int:invoice_id>/details/',
+         views.DetalleFacturaListView.as_view(), name='invoice-details'),
+    path('invoices/<int:invoice_id>/details/add',
+         views.DetalleFacturaCreateView.as_view(), name='invoice-detail-add'),
+    path('invoices/<int:invoice_id>/details/<int:pk>',
+         views.DetalleFacturaUpdateView.as_view(), name='invoice-detail-update'),
+    path('invoices/<int:invoice_id>/details/<int:pk>/delete',
+         views.DetalleFacturaDeleteView.as_view(), name='invoice-detail-delete'),
 ]

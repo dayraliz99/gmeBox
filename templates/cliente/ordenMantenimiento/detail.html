@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Ver Órden de Mantenimiento{% endblock%}
+{% block content %}
+<h3>Cliente</h3>
+<table class="table table-bordered">
+    <tr>
+        <th>Nombre:</th>
+        <td>{{ object.cliente.nombre }}</td>
+    </tr>
+    <tr>
+        <th>Apellido:</th>
+        <td>{{ object.cliente.apellido }}</td>
+    </tr>
+    <tr>
+        <th>Número de Identificación:</th>
+        <td>{{ object.cliente.numero_identificacion }}</td>
+    </tr>
+    <tr>
+        <th>Correo electrónico:</th>
+        <td>{{ object.cliente.usuario.correo_electronico }}</td>
+    </tr>
+
+</table>
+<table class="table table-hover table-condensed table-striped">
+    <thead>
+        <tr>
+            <th>Equipo</th>
+            <th>Estado</th>
+            <th>Descripción</th>
+            <th>Observaciones</th>
+            <th>Servicio</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in object.detalles.all %}
+        <tr>
+            <td>
+                {{detalle.nombre_equipo}}
+            </td>
+            <td>
+                {{detalle.estado}}
+            </td>
+            <td>
+                {{detalle.observacion}}
+            </td>
+            <td>
+                {% for revision in detalle.revisiones.all %}
+                <li>{{revision.descripcion}}</li>
+                {% endfor %}
+            </td>
+            <td class="text-right">
+                {{detalle.precio_servicio}}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tr class="text-right">
+        <td colspan="4"><b>TOTALES: </b></td>
+        <td>{{ object.monto_servicio }}</td>
+    </tr>
+    </tfoot>
+</table>
+{% endblock %}

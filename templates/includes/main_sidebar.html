@@ -27,6 +27,7 @@
 
     <!-- sidebar menu: : style can be found in sidebar.less -->
     {% block nav_links_ul %}
+    {% has_role request.user 'CLIENTE' as has_role_cliente %}
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
         {% block nav_links_outer %}
@@ -36,9 +37,18 @@
 
         {% block nav_links %}
         {% has_permission request.user 'view_ordenmantenimiento' as has_permission %}
-        {% if has_permission %}
+        {% if has_permission and has_role_cliente is False  %}
         <li class="nav-item">
           <a href="{% url 'orders' %}" class="nav-link">
+            <i class="nav-icon fas fa-cart-plus"></i>
+            <p>Registro de Equipos</p>
+          </a>
+        </li>
+        {%endif%}
+
+        {% if has_role_cliente %}
+        <li class="nav-item">
+          <a href="{% url 'orders-client' %}" class="nav-link">
             <i class="nav-icon fas fa-cart-plus"></i>
             <p>Registro de Equipos</p>
           </a>
@@ -104,5 +114,4 @@
     </nav>
     {% endblock nav_links_ul %}
   </div>
-  <!-- /.sidebar -->
 </aside>

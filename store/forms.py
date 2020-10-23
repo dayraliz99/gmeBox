@@ -1,7 +1,7 @@
 from django import forms
 from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, RevisionTecnica, Factura, DetalleFactura
 from django.forms import ModelForm
-from django.forms.models import inlineformset_factory
+
 
 class TecnicoForm(ModelForm):
     correo_electronico = forms.EmailField(
@@ -136,7 +136,7 @@ class FacturaForm(ModelForm):
     """
     class Meta:
         model = Factura
-        fields = ('cliente','fecha_venta', 'empresa',)
+        fields = ('cliente', 'fecha_venta', 'empresa',)
         widgets = dict(
             cliente=forms.Select(
                 attrs={'class': 'form-control'}),
@@ -145,6 +145,22 @@ class FacturaForm(ModelForm):
             fecha_venta=forms.TextInput(
                 attrs={'class': 'form-control', "type": "date"}),
         )
-FacturaFormset = inlineformset_factory(
-    Factura, DetalleFactura, fields=('detalle',)
-)
+
+
+class DetalleFacturaForm(ModelForm):
+    """
+    Formulario personalizado para crear y editar un detalle de factura.
+     **Context**
+    ``DetalleFactura``
+        An instance of :model:`store.DetalleFactura`.
+    """
+    class Meta:
+        model = DetalleFactura
+        fields = ('cantidad', 'producto','precioUnitario',)
+        widgets = dict(
+            cantidad=forms.TextInput(
+                attrs={'class': 'form-control', "type": "number"}),
+            precioUnitario=forms.TextInput(
+                attrs={'class': 'form-control', 'type': 'number'}),
+            producto=forms.Select(attrs={'class': 'form-control'}),
+        )

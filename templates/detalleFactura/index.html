@@ -1,0 +1,85 @@
+{% extends 'base.html' %} {% block title %}Detalles de Factura{% endblock%}
+{% block breadcrumbs %}
+<section class="content-header">
+  <ol class="breadcrumb float-sm-right">
+    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'invoice-update' invoice_id %}">Editar Factura</a>
+    </li>
+    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'invoice-details' invoice_id %}">Detalles</a></li>
+  </ol>
+</section>
+
+{% endblock %} {% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Detalles</h3>
+    <div class="card-tools">
+      <form action="" method="get">
+        <input name="filter" value="{{filter}}" />
+        <button class="btn btn-primary" type="submit">
+          <i class="nav-icon fas fa-search"></i> Buscar
+        </button>
+      </form>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover datatable table-bordered">
+        <thead>
+          <tr>
+            <th>Detalle</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Total</th>
+            <th>Accion</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for detalle in detalles %}
+          <tr>
+            <td>{{ detalle.detalle }}</td>
+            <td>{{ detalle.cantidad }}</td>
+            <td>{{ detalle.precio_unitario }}</td>
+            <td>{{ detalle.total }}</td>
+            <td>
+              <a href="{% url 'invoice-detail-update' invoice_id detalle.id %}">
+                <i class="nav-icon text-success fa fa-edit"></i>
+              </a>
+              <a href="{% url 'invoice-detail-delete' invoice_id detalle.id %}"> <i
+                  class="nav-icon text-danger fa fa-trash"></i> </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-8">
+        <div class="pagination">
+          <span class="step-links">
+            {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-4">
+        <a style="float: right" class="btn btn-primary pull-right" href="{% url 'invoice-detail-add' invoice_id %}">
+          <i class="nav-icon fas fa-plus-circle"></i> Agregar
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

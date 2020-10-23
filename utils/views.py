@@ -25,3 +25,25 @@ class CustomUserOnlyMixin(object):
             raise PermissionDenied
         return super(CustomUserOnlyMixin, self).dispatch(
             request, *args, **kwargs)
+
+
+class CustomGroupOnlyMixin(object):
+    """
+    Permite personalizar los grupos de acceso para los views
+    """
+    groups_required = None
+
+    def has_permissions(self):
+        if self.request.user.is_active is False:
+            return False
+        groups = self.request.user.groups.all()
+        for group_required in groups:
+            if group_required.name == group_required:
+                return True
+        return False
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permissions():
+            raise PermissionDenied
+        return super(CustomGroupOnlyMixin, self).dispatch(
+            request, *args, **kwargs)

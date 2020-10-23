@@ -1,7 +1,7 @@
 from datetime import datetime
 from django_weasyprint.views import CONTENT_TYPE_PNG
 from django_weasyprint import WeasyTemplateResponseMixin
-from utils.views import CustomUserOnlyMixin
+from utils.views import CustomUserOnlyMixin, CustomGroupOnlyMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
@@ -13,12 +13,13 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseRedirect
+from django.core.exceptions import PermissionDenied
 from people.models import Usuario
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica, Factura
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica, Factura, DetalleFactura
 from store.forms import (OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm,
-                         GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm, FacturaForm, FacturaFormset)
+                         GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm, FacturaForm, DetalleFacturaForm)
 
 
 class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
@@ -58,20 +59,19 @@ class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
         return context
 
 
-class OrdenDetailView(LoginRequiredMixin, CustomUserOnlyMixin, DetailView):
+class OrdenPrintView(LoginRequiredMixin, DetailView):
     model = OrdenMantenimiento
-    permissions_required = ('view_ordenmantenimiento',)
-    template_name = 'ordenMantenimiento/detail.html'
+    template_name = 'ordenMantenimiento/print.html'
 
     def get_context_data(self, **kwargs):
-        context = super(OrdenDetailView, self).get_context_data(**kwargs)
+        context = super(OrdenPrintView, self).get_context_data(**kwargs)
         context['title'] = "Detalle de Órden"
         context['asunto'] = "Órden de Mantenimiento"
         context['fecha'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return context
 
 
-class OrdenDownloadView(WeasyTemplateResponseMixin, OrdenDetailView):
+class OrdenDownloadView(WeasyTemplateResponseMixin, OrdenPrintView):
     pdf_filename = 'detalle.pdf'
 
 
@@ -154,7 +154,7 @@ class OrdenDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
             return super(OrdenDeleteView, self).post(request, *args, **kwargs)
 
 
-class OrdenConfirm(UpdateView, LoginRequiredMixin, CustomUserOnlyMixin):
+class OrdenConfirm(UpdateView, LoginRequiredMixin, CustomGroupOnlyMixin):
     """
     Permite confirmar soporte órdenes de mantenimiento
     **Context**
@@ -171,7 +171,7 @@ class OrdenConfirm(UpdateView, LoginRequiredMixin, CustomUserOnlyMixin):
     template_name = 'ordenMantenimiento/confirmSupport.html'
     success_url = reverse_lazy('orders')
     success_message = 'Órden confirmada con exito'
-    permissions_required = ('change_ordenmantenimiento',)
+    groups_required = ('CLIENTE',)
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
@@ -180,8 +180,11 @@ class OrdenConfirm(UpdateView, LoginRequiredMixin, CustomUserOnlyMixin):
         return super(OrdenConfirm, self).post(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.confirmar()
-        form.instance.estado = "CONFIRMADO"
+        if self.request.user.persona_id == form.instance.cliente_id:
+            form.instance.confirmar()
+            form.instance.estado = "CONFIRMADO"
+        else:
+            raise PermissionDenied
         return super().form_valid(form)
 
 
@@ -421,11 +424,12 @@ class DetalleOrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
         return context
 
 
-class DetalleOrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+class DetalleOrdenCreateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRequiredMixin, CreateView):
     model = DetalleOrden
     form_class = DetalleOrdenForm
     template_name = 'detalleOrden/edit.html'
     success_message = 'Detalle creado con exito'
+    permissions_required = ('add_detalleorden',)
 
     def get_success_url(self):
         return reverse('order-detail-update', kwargs={'order_id': self.kwargs['order_id'], 'pk': self.object.pk, })
@@ -445,11 +449,12 @@ class DetalleOrdenCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView
         return super().form_valid(form)
 
 
-class DetalleOrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+class DetalleOrdenUpdateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRequiredMixin, UpdateView):
     model = DetalleOrden
     form_class = DetalleOrdenForm
     template_name = 'detalleOrden/edit.html'
     success_message = 'Órden actualizada con exito'
+    permissions_required = ('change_detalleOrden',)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('order-details', kwargs={'order_id': self.kwargs['order_id']})
@@ -469,9 +474,10 @@ class DetalleOrdenUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView
         return super().form_valid(form)
 
 
-class DetalleOrdenDeleteView(DeleteView, LoginRequiredMixin):
+class DetalleOrdenDeleteView(DeleteView, CustomUserOnlyMixin, LoginRequiredMixin):
     model = DetalleOrden
     template_name = 'delete.html'
+    permissions_required = ('delete_detalleOrden',)
 
     def get_context_data(self, **kwargs):
         context = super(DetalleOrdenDeleteView,
@@ -489,7 +495,6 @@ class DetalleOrdenDeleteView(DeleteView, LoginRequiredMixin):
             return HttpResponseRedirect(url)
         else:
             detalle = DetalleOrden.objects.get(id=self.kwargs['pk'])
-
             orden = OrdenMantenimiento.objects.get(id=self.kwargs['order_id'])
             orden.calcular_monto()
             orden.monto_servicio = orden.monto_servicio - detalle.precio_servicio
@@ -751,29 +756,14 @@ class FacturaCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     success_message = 'Factura creada con exito'
     permissions_required = ('add_factura',)
 
-    def get_context_data(self, **kwargs):
-        context = super(FacturaCreateView, self).get_context_data(**kwargs)
-        if self.request.POST:
-            context["detalle"] = FacturaFormset(self.request.POST)
-        else:
-            context["detalle"] = FacturaFormset()
-        return context
 
     def form_valid(self, form):
-        context = self.get_context_data()
-        children = context["chidetalleldren"]
-        self.object = form.save()
-        if children.is_valid():
-            children.instance = self.object
-            children.save()
+        empresa = Empresa.objects.first()
+        if empresa is None:
+            raise ValidationError("Debe agregar datos de empresa")
+        form.instance.empresa_id = empresa.id
+        form.instance.estado = "POR_PAGAR"
         return super().form_valid(form)
-    # def form_valid(self, form):
-    #     empresa = Empresa.objects.first()
-    #     if empresa is None:
-    #         raise ValidationError("Debe agregar datos de empresa")
-    #     form.instance.empresa_id = empresa.id
-    #     form.instance.estado = "POR_PAGAR"
-    #     return super().form_valid(form)
 
 
 class FacturaUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, UpdateView):
@@ -799,9 +789,9 @@ class FacturaUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
         if empresa is None:
             raise ValidationError("Debe agregar datos de empresa")
         form.instance.empresa_id = empresa.id
-        form.instance.subtotal()
-        form.instance.impuesto()
-        form.instance.total()
+        form.instance.calcular_subtotal()
+        form.instance.calcular_impuesto()
+        form.instance.calcular_total()
         return super().form_valid(form)
 
 
@@ -828,3 +818,170 @@ class FacturaDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
             return HttpResponseRedirect(url)
         else:
             return super(FacturaDeleteView, self).post(request, *args, **kwargs)
+
+
+class OrdenClienteListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
+    """
+    Permite listar las órdenes de mantenimiento por cliente
+    **Context**
+
+    ``OrdenMantenimiento``
+        An instance of :model:`store.OrdenMantenimiento`.
+
+    **Template:**
+
+    :template:`cliente/ordenMantenimiento/index.html`
+    """
+    model = OrdenMantenimiento
+    template_name = 'cliente/ordenMantenimiento/index.html'
+    context_object_name = 'ordenes'
+    paginate_by = 20
+    queryset = OrdenMantenimiento.objects.all()
+    permissions_required = ('view_ordenmantenimiento',)
+
+    def get_queryset(self):
+        new_context = self.queryset.filter(
+            cliente__id=self.request.user.persona_id)
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(
+                Q(descripcion__icontains=self.request.GET.get('filter')) | Q(
+                    cliente__apellido__icontains=self.request.GET.get('filter')) | Q(
+                        cliente__nombre__icontains=self.request.GET.get('filter')) | Q(
+                        cliente__numero_identificacion__icontains=self.request.GET.get('filter')))
+
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenClienteListView, self).get_context_data(**kwargs)
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
+        return context
+
+
+class OrdenClienteDetailView(LoginRequiredMixin, CustomUserOnlyMixin, DetailView):
+    model = OrdenMantenimiento
+    permissions_required = ('view_ordenmantenimiento',)
+    template_name = 'cliente/ordenMantenimiento/detail.html'
+
+
+class DetalleFacturaListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
+    """
+    Permite listar detalles de facturas
+    **Context**
+
+    ``DetalleFactura``
+        An instance of :model:`store.DetalleFactura`.
+
+    **Template:**
+
+    :template:`detalleFactura/index.html`
+    """
+    model = DetalleFactura
+    template_name = 'detalleFactura/index.html'
+    context_object_name = 'detalles'
+    paginate_by = 10
+    queryset = DetalleFactura.objects.all()
+    permissions_required = ('view_detalleFactura',)
+
+    def get_queryset(self):
+        new_context = self.queryset.filter(
+            factura__id=self.kwargs['invoice_id'])
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(
+                Q(detale=self.request.GET.get('filter')))
+
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(DetalleFacturaListView,
+                        self).get_context_data(**kwargs)
+        context['invoice_id'] = self.kwargs['invoice_id']
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
+        return context
+
+
+class DetalleFacturaCreateView(SuccessMessageMixin,CustomUserOnlyMixin, LoginRequiredMixin, CreateView):
+    model = DetalleFactura
+    form_class = DetalleFacturaForm
+    template_name = 'detalleFactura/edit.html'
+    success_message = 'Detalle creado con exito'
+    permissions_required = ('add_detalleFactura',)
+
+    def get_success_url(self):
+        return reverse('invoice-detail-update', kwargs={'invoice_id': self.kwargs['invoice_id'], 'pk': self.object.pk, })
+
+    def get_context_data(self, **kwargs):
+        context = super(DetalleFacturaCreateView,
+                        self).get_context_data(**kwargs)
+        context['invoice_id'] = self.kwargs['invoice_id']
+        return context
+
+    def form_valid(self, form):
+        factura = Factura.objects.get(id=self.kwargs['invoice_id'])
+        form.instance.factura_id = factura.id
+        form.instance.detalle = form.instance.producto.nombre
+        form.instance.calcular_total()
+        form.save()
+        factura.calcular_subtotal()
+        factura.calcular_impuesto()
+        factura.calcular_total()
+        factura.save()
+        return super().form_valid(form)
+
+
+class DetalleFacturaUpdateView(SuccessMessageMixin,CustomUserOnlyMixin, LoginRequiredMixin, UpdateView):
+    model = DetalleFactura
+    form_class = DetalleFacturaForm
+    template_name = 'detalleFactura/edit.html'
+    success_message = 'Órden actualizada con exito'
+    permissions_required = ('change_detalleFactura',)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('invoice-details', kwargs={'invoice_id': self.kwargs['invoice_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(DetalleFacturaUpdateView,
+                        self).get_context_data(**kwargs)
+        context['invoice_id'] = self.kwargs['invoice_id']
+        context['invoice_detail_id'] = self.kwargs['pk']
+        return context
+
+    def form_valid(self, form):
+        form.instance.calcular_total()
+        form.save()
+        factura = Factura.objects.get(id=self.kwargs['invoice_id'])
+        factura.calcular_subtotal()
+        factura.calcular_impuesto()
+        factura.calcular_total()
+        return super().form_valid(form)
+
+
+class DetalleFacturaDeleteView(DeleteView, CustomUserOnlyMixin,LoginRequiredMixin):
+    model = DetalleFactura
+    template_name = 'delete.html'
+    permissions_required = ('delete_detalleFactura',)
+
+    def get_context_data(self, **kwargs):
+        context = super(DetalleFacturaDeleteView,
+                        self).get_context_data(**kwargs)
+        context['invoice_id'] = self.kwargs['invoice_id']
+        return context
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('invoice-details', kwargs={'invoice_id': self.kwargs['invoice_id']})
+
+    def post(self, request, *args, **kwargs):
+        if "cancel" in request.POST:
+            url = reverse_lazy(
+                'invoice-details',  kwargs={'invoice_id': self.kwargs['invoice_id']})
+            return HttpResponseRedirect(url)
+        else:
+            detalle = DetalleFactura.objects.get(id=self.kwargs['pk'])
+
+            factura = Factura.objects.get(id=self.kwargs['order_id'])
+            factura.calcular_subtotal()
+            factura.calcular_impuesto()
+            factura.calcular_total()
+            factura.save()
+            return super(DetalleFacturaDeleteView, self).post(request, *args, **kwargs)

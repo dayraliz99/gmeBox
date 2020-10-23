@@ -1,7 +1,7 @@
 from django.contrib import admin
 from people.models import Direccion
 
-from store.models import (Categoria, Empresa, Impuesto, Precio, Producto,
+from store.models import (Categoria, Empresa, Producto,
                           Proveedor, OrdenMantenimiento, DetalleOrden, RevisionTecnica, Compra, DetalleCompra)
 import nested_admin
 
@@ -39,19 +39,10 @@ class CategoriaAdmin(admin.ModelAdmin):
     )
 
 
-class PrecioAdminInline(admin.TabularInline):
-    model = Precio
-
-
-class ImpuestoAdmin(admin.TabularInline):
-    model = Impuesto
-
-
 class ProductoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'cantidad', 'descripcion', 'categoria')
     search_fields = ('nombre', 'categoria')
     list_filter = ('nombre', 'categoria')
-    inlines = (PrecioAdminInline, ImpuestoAdmin)
 
 
 class RevisionTecnicaAdminInline(nested_admin.NestedTabularInline):

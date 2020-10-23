@@ -186,10 +186,17 @@ class Producto(models.Model):
     """
     nombre = models.CharField(max_length=255, verbose_name='Nombre')
     cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
+    precio = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Precio', default=0.0)
+    impuesto_iva = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Iva', default=0.0)
     descripcion = models.TextField(
         verbose_name='Descripción', null=True, blank=True)
     categoria = models.ForeignKey(
         Categoria, on_delete=models.CASCADE, related_name='productos')
+
+    def __str__(self):
+        return '{} {}'.format(self.nombre, self.precio)
 
 
 class Precio (models.Model):
@@ -216,7 +223,7 @@ class Impuesto (models.Model):
 
 class Compra (models.Model):
     """
-    Contiene el registro de una compra de uno o muchos productos que ingresan a la empresa y contiene los 
+    Contiene el registro de una compra de uno o muchos productos que ingresan a la empresa y contiene los
     datos del proveedo a quien se realiza la compra.
     """
     ESTADO = (
@@ -270,11 +277,13 @@ class Factura (models.Model):
     fecha_venta = models.DateField(
         verbose_name="Fecha de compra")
     subtotal = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='SubTotal')
+        max_digits=12, decimal_places=2, verbose_name='SubTotal', default=0.0)
     impuesto = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Impuesto')
+        max_digits=12, decimal_places=2, verbose_name='Impuesto', default=0.0)
     total = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Total')
+        max_digits=12, decimal_places=2, verbose_name='Total', default=0.0)
+    monto_pagado = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Total', default=0.0)
     estado = models.CharField(
         max_length=50,
         choices=ESTADO,
@@ -286,9 +295,12 @@ class Factura (models.Model):
     cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, related_name='facturas')
 
+    def get_absolute_url(self):
+        return reverse('invoice-update', kwargs={'pk': self.pk})
+
     def calcular_subtotal(self):
         self.subtotal = sum(
-            map(lambda detalle: detalle.precioUnitario, self.detalles.all()))
+            map(lambda detalle: detalle.total, self.detalles.all()))
 
     def calcular_impuesto(self):
         self.impuesto = sum(
@@ -296,6 +308,14 @@ class Factura (models.Model):
 
     def calcular_total(self):
         self.total = self.subtotal+self.impuesto
+
+    def calcular_pagos(self):
+        self.monto_pagado = sum(
+            map(lambda pago: pago.monto, self.pagos.all()))
+        if self.monto_pagado == self.total:
+            self.estado = "PAGADO"
+        else:
+            self.estado = "POR_PAGAR"
 
 
 class DetalleFactura (models.Model):
@@ -305,11 +325,11 @@ class DetalleFactura (models.Model):
     detalle = models.CharField(max_length=255, null=True, blank=True)
     cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
     precioUnitario = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Precio Unitario')
+        max_digits=12, decimal_places=2, verbose_name='Precio Unitario', default=0.0)
     impuesto = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Impuesto')
+        max_digits=12, decimal_places=2, verbose_name='Impuesto', default=0.0)
     total = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Total')
+        max_digits=12, decimal_places=2, verbose_name='Total', default=0.0)
     producto = models.ForeignKey(
         Producto, null=True, blank=True, on_delete=models.CASCADE, related_name='ventas')
     factura = models.ForeignKey(
@@ -317,3 +337,15 @@ class DetalleFactura (models.Model):
 
     def calcular_total(self):
         self.total = self.precioUnitario * self.cantidad
+
+
+class PagoFactura (models.Model):
+    """
+    Pagos de Factura.
+    """
+    fecha_pago = models.DateField(verbose_name="Fecha de compra")
+    mmonto = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name='Precio Unitario', default=0.0)
+    factura = models.ForeignKey(
+        Factura, on_delete=models.CASCADE, related_name='pagos')
+    descripcion = models.CharField(max_length=255, null=True, blank=True)
