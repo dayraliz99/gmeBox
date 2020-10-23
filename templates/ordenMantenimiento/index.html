@@ -37,13 +37,13 @@
               {{ orden.descripcion }}
             </td>
             <td>
-              {% has_permission request.user 'update_tecnico' as has_permission_update %}
+              {% has_permission request.user 'change_ordenmantenimiento' as has_permission_update %}
               {% if has_permission_update %}
               <a href="{% url 'order-update' orden.id %}">
                 <i class="nav-icon text-success fa fa-edit"></i>
               </a>
               {%endif%}
-              {% has_permission request.user 'delete_tecnico' as has_permission_delete %}
+              {% has_permission request.user 'delete_ordenmantenimiento' as has_permission_delete %}
               {% if has_permission_delete %}
               <a href="{% url 'order-delete' orden.id %}"> <i class="nav-icon text-danger fa fa-trash"></i> </a>
               {%endif%}

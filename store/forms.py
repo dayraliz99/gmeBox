@@ -1,7 +1,7 @@
 from django import forms
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, RevisionTecnica, Factura
+from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, RevisionTecnica, Factura, DetalleFactura
 from django.forms import ModelForm
-
+from django.forms.models import inlineformset_factory
 
 class TecnicoForm(ModelForm):
     correo_electronico = forms.EmailField(
@@ -145,3 +145,6 @@ class FacturaForm(ModelForm):
             fecha_venta=forms.TextInput(
                 attrs={'class': 'form-control', "type": "date"}),
         )
+FacturaFormset = inlineformset_factory(
+    Factura, DetalleFactura, fields=('detalle',)
+)

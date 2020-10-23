@@ -24,6 +24,8 @@
         <thead>
           <tr>
             <th>Fecha</th>
+            <th>Equipo</th>
+            <th>Observación</th>
             <th>Descripción</th>
             <th>Accion</th>
           </tr>
@@ -32,6 +34,8 @@
           {% for revision in revisiones %}
           <tr>
             <td>{{ revision.fecha_revision }}</td>
+            <td>{{ revision.detalle_orden.nombre_equipo }}</td>
+            <td>{{ revision.detalle_orden.observacion }}</td>
             <td>{{ revision.descripcion }}</td>
             <td>
               <a href="{% url 'revision-by-technician-update' revision.id %}">

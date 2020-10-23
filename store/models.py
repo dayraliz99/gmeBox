@@ -106,7 +106,7 @@ class OrdenMantenimiento(models.Model):
             map(lambda detalle: detalle.precio_servicio, self.detalles.all()))
 
     def confirmar(self):
-        factura = Factura.objects.create(fechaVenta=datetime.now(), cliente=self.cliente, empresa=self.empresa, subtotal=0.0, impuesto=0.0,
+        factura = Factura.objects.create(fecha_venta=datetime.now(), cliente=self.cliente, empresa=self.empresa, subtotal=0.0, impuesto=0.0,
                                          total=0.0)
 
         for detalle in self.detalles.all():

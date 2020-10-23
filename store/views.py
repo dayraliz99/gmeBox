@@ -18,7 +18,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica, Factura
 from store.forms import (OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm,
-                         GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm, FacturaForm)
+                         GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm, FacturaForm, FacturaFormset)
 
 
 class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
@@ -751,13 +751,29 @@ class FacturaCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     success_message = 'Factura creada con exito'
     permissions_required = ('add_factura',)
 
+    def get_context_data(self, **kwargs):
+        context = super(FacturaCreateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context["detalle"] = FacturaFormset(self.request.POST)
+        else:
+            context["detalle"] = FacturaFormset()
+        return context
+
     def form_valid(self, form):
-        empresa = Empresa.objects.first()
-        if empresa is None:
-            raise ValidationError("Debe agregar datos de empresa")
-        form.instance.empresa_id = empresa.id
-        form.instance.estado = "POR_PAGAR"
+        context = self.get_context_data()
+        children = context["chidetalleldren"]
+        self.object = form.save()
+        if children.is_valid():
+            children.instance = self.object
+            children.save()
         return super().form_valid(form)
+    # def form_valid(self, form):
+    #     empresa = Empresa.objects.first()
+    #     if empresa is None:
+    #         raise ValidationError("Debe agregar datos de empresa")
+    #     form.instance.empresa_id = empresa.id
+    #     form.instance.estado = "POR_PAGAR"
+    #     return super().form_valid(form)
 
 
 class FacturaUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyMixin, UpdateView):
