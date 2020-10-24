@@ -196,7 +196,12 @@ class Producto(models.Model):
         Categoria, on_delete=models.CASCADE, related_name='productos')
 
     def __str__(self):
-        return '{} {}'.format(self.nombre, self.precio)
+        return '{} Precio: {}'.format(self.nombre, self.precio)
+
+    def calcular_cantidad(self):
+        self.cantidad = sum(
+            map(lambda detalle: detalle.cantidad, self.compras.all())) - sum(
+            map(lambda detalle: detalle.cantidad, self.ventas.all()))
 
 
 class Precio (models.Model):
@@ -233,11 +238,11 @@ class Compra (models.Model):
     fecha_compra = models.DateField(
         verbose_name="Fecha de compra")
     subtotal = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='SubTotal')
+        max_digits=12, decimal_places=2, verbose_name='SubTotal', default=0.0)
     impuesto = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Impuesto')
+        max_digits=12, decimal_places=2, verbose_name='Impuesto', default=0.0)
     total = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Total')
+        max_digits=12, decimal_places=2, verbose_name='Total', default=0.0)
     estado = models.CharField(
         max_length=50,
         choices=ESTADO,
@@ -246,6 +251,17 @@ class Compra (models.Model):
     )
     proveedor = models.ForeignKey(
         Proveedor, on_delete=models.CASCADE, related_name='compras')
+
+    def calcular_subtotal(self):
+        self.subtotal = sum(
+            map(lambda detalle: detalle.total, self.detalles.all()))
+
+    def calcular_total(self):
+        self.total = self.subtotal + self.impuesto
+
+    def calcular_impuesto(self):
+        self.impuesto = sum(
+            map(lambda detalle: detalle.impuesto, self.detalles.all()))
 
 
 class DetalleCompra (models.Model):
@@ -257,13 +273,17 @@ class DetalleCompra (models.Model):
     precio_unitario = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Precio Unitario')
     impuesto = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Impuesto')
+        max_digits=12, decimal_places=2, verbose_name='Impuesto', default=0.0)
     total = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name='Total')
+        max_digits=12, decimal_places=2, verbose_name='Total', default=0.0)
     producto = models.ForeignKey(
         Producto, on_delete=models.CASCADE, related_name='compras')
     compra = models.ForeignKey(
         Compra, on_delete=models.CASCADE, related_name='detalles')
+
+    def calcular_total(self):
+        print('pasa')
+        self.total = self.cantidad * self.precio_unitario
 
 
 class Factura (models.Model):

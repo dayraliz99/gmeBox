@@ -17,7 +17,7 @@ from django.core.exceptions import PermissionDenied
 from people.models import Usuario
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from store.models import (Tecnico, OrdenMantenimiento, Cliente, DetalleOrden,
+from store.models import (Tecnico, OrdenMantenimiento, Cliente, DetalleOrden,Producto,
                           Empresa, RevisionTecnica, Factura, DetalleFactura, PagoFactura)
 from store.forms import (OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm, PagoFacturaForm,
                          GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm, FacturaForm, DetalleFacturaForm)
@@ -921,6 +921,11 @@ class DetalleFacturaCreateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRe
         factura = Factura.objects.get(id=self.kwargs['invoice_id'])
         form.instance.factura_id = factura.id
         form.instance.detalle = form.instance.producto.nombre
+        producto = Producto.objects.get(id=form.instance.producto.id)
+        producto.calcular_cantidad()
+        if producto.cantidad <= 0:
+            raise ValidationError("No ha stock del producto")
+        producto.save()
         form.instance.calcular_total()
         form.save()
         factura.calcular_subtotal()
@@ -948,6 +953,11 @@ class DetalleFacturaUpdateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRe
         return context
 
     def form_valid(self, form):
+        producto = Producto.objects.get(id=form.instance.producto.id)
+        producto.calcular_cantidad()
+        if producto.cantidad <= 0:
+            raise ValidationError("No ha stock del producto")
+        producto.save()
         form.instance.calcular_total()
         form.save()
         factura = Factura.objects.get(id=self.kwargs['invoice_id'])
@@ -978,8 +988,13 @@ class DetalleFacturaDeleteView(DeleteView, CustomUserOnlyMixin, LoginRequiredMix
             return HttpResponseRedirect(url)
         else:
             detalle = DetalleFactura.objects.get(id=self.kwargs['pk'])
-            factura = Factura.objects.get(id=self.kwargs['order_id'])
-            factura.calcular_subtotal() - detalle.total
+            producto = Producto.objects.get(id=detalle.producto.id)
+            producto.calcular_cantidad()
+            producto.cantidad = producto.cantidad + detalle.cantidad
+    
+            producto.save()
+            factura = Factura.objects.get(id=self.kwargs['invoice_id'])
+            factura.subtotal = factura.subtotal - detalle.total
             factura.calcular_impuesto()
             factura.calcular_total()
             factura.save()
@@ -1099,6 +1114,7 @@ class PagoFacturaDeleteView(DeleteView, CustomUserOnlyMixin, LoginRequiredMixin)
             factura.calcular_pagos() - pago.monto
             factura.save()
             return super(PagoFacturaDeleteView, self).post(request, *args, **kwargs)
+
 
 class PagoFacturaDetailView(LoginRequiredMixin, CustomUserOnlyMixin, DetailView):
     model = PagoFactura

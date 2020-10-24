@@ -43,7 +43,9 @@ class ProductoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'cantidad', 'descripcion', 'categoria')
     search_fields = ('nombre', 'categoria')
     list_filter = ('nombre', 'categoria')
-
+    def save_model(self, request, obj, form, change):
+        obj.calcular_cantidad()
+        obj.save()
 
 class RevisionTecnicaAdminInline(nested_admin.NestedTabularInline):
     model = RevisionTecnica
@@ -63,8 +65,36 @@ class OrdenMantenimientoAdmin(nested_admin.NestedModelAdmin):
     inlines = (DetalleOrdenInline,)
 
 
+class DetalleCompraInline(admin.TabularInline):
+    model = DetalleCompra
+    fields = ('producto', 'cantidad', 'precio_unitario', 'impuesto')
+
+
+class CompraAdmin(admin.ModelAdmin):
+    fields = ('fecha_compra', 'proveedor', 'estado',)
+    list_display = ('fecha_compra', 'proveedor', 'estado',
+                    'subtotal', 'impuesto', 'total')
+    search_fields = ('proveedor', 'estado')
+    list_filter = ('fecha_compra', 'estado', 'proveedor')
+    inlines = (DetalleCompraInline,)
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            instance.calcular_total()
+            instance.save()
+            producto = Producto.objects.get(id=instance.producto.id)
+            producto.cantidad = producto.cantidad+instance.cantidad
+            producto.save()
+        formset.instance.calcular_impuesto()
+        formset.instance.calcular_subtotal()
+        formset.instance.calcular_total()
+        formset.instance.save()
+
+
 admin.site.register(Empresa, EmpresaAdmin)
 admin.site.register(Proveedor, ProveedorAdmin)
 admin.site.register(Categoria, CategoriaAdmin)
 admin.site.register(Producto, ProductoAdmin)
 admin.site.register(OrdenMantenimiento, OrdenMantenimientoAdmin)
+admin.site.register(Compra, CompraAdmin)
