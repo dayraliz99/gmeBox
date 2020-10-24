@@ -175,10 +175,11 @@ class PagoFacturaForm(ModelForm):
     """
     class Meta:
         model = PagoFactura
-        fields = ('fecha_pago', 'monto',)
+        fields = ('fecha_pago', 'monto', 'descripcion')
         widgets = dict(
             fecha_pago=forms.DateInput(
                 attrs={'class': 'form-control', "type": "date"}),
             monto=forms.TextInput(
                 attrs={'class': 'form-control', 'type': 'number'}),
+            descripcion=forms.Textarea(attrs={'class': 'form-control'}),
         )

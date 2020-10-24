@@ -1,0 +1,85 @@
+{% extends 'base.html' %} {% block title %}Pagos{% endblock%}
+{% block breadcrumbs %}
+<section class="content-header">
+  <ol class="breadcrumb float-sm-right">
+    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'invoice-update' invoice_id %}">Editar Factura</a>
+    </li>
+    <li class="breadcrumb-item"><a class="link-visited" href="{% url 'invoice-payments' invoice_id %}">Pagos</a></li>
+  </ol>
+</section>
+
+{% endblock %} {% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Pagos</h3>
+    <div class="card-tools">
+      <form action="" method="get">
+        <input name="filter" value="{{filter}}" />
+        <button class="btn btn-primary" type="submit">
+          <i class="nav-icon fas fa-search"></i> Buscar
+        </button>
+      </form>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover datatable table-bordered">
+        <thead>
+          <tr>
+            <th>Fecha Pago</th>
+            <th>Monto</th>
+            <th>Descripción</th>
+            <th>Accion</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pago in pagos %}
+          <tr>
+            <td>{{ pago.fecha_pago }}</td>
+            <td>{{ pago.monto }}</td>
+            <td>{{ pago.descripcion }}</td>
+            <td>
+              <a href="{% url 'invoice-payment-update' invoice_id pago.id %}">
+                <i class="nav-icon text-success fa fa-edit"></i>
+              </a>
+              <a href="{% url 'invoice-payment-delete' invoice_id pago.id %}"> <i
+                  class="nav-icon text-danger fa fa-trash"></i> </a>
+                  <a href="{% url 'invoice-payment-download' invoice_id pago.id %}"> <i
+                    class="nav-icon text-info fa fa-print"></i> </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-8">
+        <div class="pagination">
+          <span class="step-links">
+            {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-12 col-md-4">
+        <a style="float: right" class="btn btn-primary pull-right" href="{% url 'invoice-payment-add' invoice_id %}">
+          <i class="nav-icon fas fa-plus-circle"></i> Agregar
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

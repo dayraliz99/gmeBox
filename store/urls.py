@@ -73,4 +73,15 @@ urlpatterns = [
          views.DetalleFacturaUpdateView.as_view(), name='invoice-detail-update'),
     path('invoices/<int:invoice_id>/details/<int:pk>/delete',
          views.DetalleFacturaDeleteView.as_view(), name='invoice-detail-delete'),
+
+    path('invoices/<int:invoice_id>/payments/',
+         views.PagoFacturaListView.as_view(), name='invoice-payments'),
+    path('invoices/<int:invoice_id>/payments/add',
+         views.PagoFacturaCreateView.as_view(), name='invoice-payment-add'),
+    path('invoices/<int:invoice_id>/payments/<int:pk>',
+         views.PagoFacturaUpdateView.as_view(), name='invoice-payment-update'),
+    path('invoices/<int:invoice_id>/payments/<int:pk>/delete',
+         views.PagoFacturaDeleteView.as_view(), name='invoice-payment-delete'),
+    path('invoices/<int:invoice_id>/payments/<int:pk>/download',
+         views.PagoFacturaDetailViewDownloadView.as_view(), name='invoice-payment-download'),
 ]

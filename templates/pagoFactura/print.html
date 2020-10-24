@@ -1,0 +1,17 @@
+{% include "reporte_base.html" %}
+{% include "reporte_encabezado.html" %}
+<h3>Datos de Pago</h3>
+<table class="table table-bordered">
+    <tr>
+        <th>Fecha:</th>
+        <td>{{ object.fecha_pago }}</td>
+    </tr>
+    <tr>
+        <th>Monto:</th>
+        <td>{{ object.monto }}</td>
+    </tr>
+    <tr>
+        <th>Descripción:</th>
+        <td>{{ object.descripcion}}</td>
+    </tr>
+</table>

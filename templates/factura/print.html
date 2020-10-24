@@ -47,17 +47,18 @@
         </tr>
         {% endfor %}
     </tbody>
-    <tr class="text-right">
-        <td colspan="3"><b>Subtotal: </b></td>
-        <td>{{ object.subtotal }}</td>
-    </tr>
-    <tr class="text-right">
-        <td colspan="3"><b>Iva: </b></td>
-        <td>{{ object.impuesto }}</td>
-    </tr>
-    <tr class="text-right">
-        <td colspan="3"><b>Total: </b></td>
-        <td>{{ object.total }}</td>
-    </tr>
+    <tfoot>
+        <tr class="text-right">
+            <td colspan="3"><b>Subtotal: </b></td>
+            <td>{{ object.subtotal }}</td>
+        </tr>
+        <tr class="text-right">
+            <td colspan="3"><b>Iva: </b></td>
+            <td>{{ object.impuesto }}</td>
+        </tr>
+        <tr class="text-right">
+            <td colspan="3"><b>Total: </b></td>
+            <td>{{ object.total }}</td>
+        </tr>
     </tfoot>
 </table>

@@ -6,6 +6,7 @@
     <li class="breadcrumb-item"><a class="link-visited" href="{% url 'invoice-update' object.pk %}">Detalle de Órden</a>
     </li>
     <li class="breadcrumb-item"><a href="{% url 'invoice-details' object.pk %}">Detalles</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'invoice-payments' object.pk %}">Pagos</a></li>
   </ol>
   {% endif%}
 </section>
@@ -21,9 +22,25 @@
       {% csrf_token %} {{ form}}
     </div>
     <div class="card-footer">
-      <button class="btn btn-success" type="submit">
-        <i class="nav-icon fas fa-save"></i> {% if object == None%}Crear{% else %}Actualizar{% endif %}
-      </button>
+      <div class="row">
+        <div class="col col-sm-12 col-xs-12 col-md-8">
+          <button class="btn btn-success" type="submit">
+            <i class="nav-icon fas fa-save"></i> {% if object == None%}Crear{% else %}Actualizar{% endif %}
+          </button>
+        </div>
+        <div>
+          {%if object is not None%}
+          <label style="text-align: right; font-size: 1.25rem; font-weight: bolder;">
+            Total: $ {{object.total}}
+
+          </label>
+          <label style="text-align: right; font-size: 1.25rem; font-weight: bolder;">
+            Pagado: $ {{object.monto_pagado}}
+
+          </label>
+          {%endif%}
+        </div>
+      </div>
     </div>
   </div>
 

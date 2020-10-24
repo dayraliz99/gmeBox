@@ -17,8 +17,9 @@ from django.core.exceptions import PermissionDenied
 from people.models import Usuario
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from store.models import Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Empresa, RevisionTecnica, Factura, DetalleFactura
-from store.forms import (OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm,
+from store.models import (Tecnico, OrdenMantenimiento, Cliente, DetalleOrden,
+                          Empresa, RevisionTecnica, Factura, DetalleFactura, PagoFactura)
+from store.forms import (OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm, PagoFacturaForm,
                          GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm, FacturaForm, DetalleFacturaForm)
 
 
@@ -933,7 +934,7 @@ class DetalleFacturaUpdateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRe
     model = DetalleFactura
     form_class = DetalleFacturaForm
     template_name = 'detalleFactura/edit.html'
-    success_message = 'Órden actualizada con exito'
+    success_message = 'Detalle actualizado con exito'
     permissions_required = ('change_detalleFactura',)
 
     def get_success_url(self, **kwargs):
@@ -977,10 +978,140 @@ class DetalleFacturaDeleteView(DeleteView, CustomUserOnlyMixin, LoginRequiredMix
             return HttpResponseRedirect(url)
         else:
             detalle = DetalleFactura.objects.get(id=self.kwargs['pk'])
-
             factura = Factura.objects.get(id=self.kwargs['order_id'])
-            factura.calcular_subtotal()
+            factura.calcular_subtotal() - detalle.total
             factura.calcular_impuesto()
             factura.calcular_total()
             factura.save()
             return super(DetalleFacturaDeleteView, self).post(request, *args, **kwargs)
+
+
+class PagoFacturaListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
+    """
+    Permite listar pagos de facturas
+    **Context**
+
+    ``PagoFactura``
+        An instance of :model:`store.PagoFactura`.
+
+    **Template:**
+
+    :template:`pagoFactura/index.html`
+    """
+    model = PagoFactura
+    template_name = 'pagoFactura/index.html'
+    context_object_name = 'pagos'
+    paginate_by = 10
+    queryset = PagoFactura.objects.all()
+    permissions_required = ('view_pagoFactura',)
+
+    def get_queryset(self):
+        new_context = self.queryset.filter(
+            factura__id=self.kwargs['invoice_id'])
+        if self.request.GET.get('filter'):
+            new_context = new_context.filter(
+                Q(detale=self.request.GET.get('filter')))
+
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(PagoFacturaListView,
+                        self).get_context_data(**kwargs)
+        context['invoice_id'] = self.kwargs['invoice_id']
+        context['filter'] = self.request.GET.get(
+            'filter') if self.request.GET.get('filter') else ''
+        return context
+
+
+class PagoFacturaCreateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRequiredMixin, CreateView):
+    model = PagoFactura
+    form_class = PagoFacturaForm
+    template_name = 'pagoFactura/edit.html'
+    success_message = 'Pago creado con exito'
+    permissions_required = ('add_detalleFactura',)
+
+    def get_success_url(self):
+        return reverse('invoice-payment-update', kwargs={'invoice_id': self.kwargs['invoice_id'], 'pk': self.object.pk, })
+
+    def get_context_data(self, **kwargs):
+        context = super(PagoFacturaCreateView,
+                        self).get_context_data(**kwargs)
+        context['invoice_id'] = self.kwargs['invoice_id']
+        return context
+
+    def form_valid(self, form):
+        factura = Factura.objects.get(id=self.kwargs['invoice_id'])
+        form.instance.factura_id = factura.id
+        form.save()
+        factura.calcular_pagos()
+        factura.save()
+        return super().form_valid(form)
+
+
+class PagoFacturaUpdateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRequiredMixin, UpdateView):
+    model = PagoFactura
+    form_class = PagoFacturaForm
+    template_name = 'pagoFactura/edit.html'
+    success_message = 'Pago actualizada con exito'
+    permissions_required = ('change_pagoFactura',)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('invoice-payments', kwargs={'invoice_id': self.kwargs['invoice_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(PagoFacturaUpdateView,
+                        self).get_context_data(**kwargs)
+        context['invoice_id'] = self.kwargs['invoice_id']
+        context['invoice_payment_id'] = self.kwargs['pk']
+        return context
+
+    def form_valid(self, form):
+        form.save()
+        factura = Factura.objects.get(id=self.kwargs['invoice_id'])
+        factura.calcular_pagos()
+        factura.save()
+        return super().form_valid(form)
+
+
+class PagoFacturaDeleteView(DeleteView, CustomUserOnlyMixin, LoginRequiredMixin):
+    model = PagoFactura
+    template_name = 'delete.html'
+    permissions_required = ('delete_pagoFactura',)
+
+    def get_context_data(self, **kwargs):
+        context = super(PagoFacturaDeleteView,
+                        self).get_context_data(**kwargs)
+        context['invoice_id'] = self.kwargs['invoice_id']
+        return context
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('invoice-payments', kwargs={'invoice_id': self.kwargs['invoice_id']})
+
+    def post(self, request, *args, **kwargs):
+        if "cancel" in request.POST:
+            url = reverse_lazy(
+                'invoice-payments',  kwargs={'invoice_id': self.kwargs['invoice_id']})
+            return HttpResponseRedirect(url)
+        else:
+            pago = PagoFactura.objects.get(id=self.kwargs['pk'])
+
+            factura = Factura.objects.get(id=self.kwargs['invoice_id'])
+            factura.calcular_pagos() - pago.monto
+            factura.save()
+            return super(PagoFacturaDeleteView, self).post(request, *args, **kwargs)
+
+class PagoFacturaDetailView(LoginRequiredMixin, CustomUserOnlyMixin, DetailView):
+    model = PagoFactura
+    permissions_required = ('view_pagofactura',)
+    template_name = 'pagoFactura/print.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PagoFacturaDetailView, self).get_context_data(**kwargs)
+        context['title'] = "Pago"
+        context['asunto'] = "Pago"
+        context['fecha'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return context
+
+
+class PagoFacturaDetailViewDownloadView(WeasyTemplateResponseMixin, PagoFacturaDetailView):
+    pdf_filename = 'pago.pdf'
