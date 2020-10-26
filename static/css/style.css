@@ -1,4 +1,13 @@
-
 .link-visited {
-    color: seagreen;
+  color: seagreen;
+}
+p {
+  font-size: 12px;
+  text-align: justify;
+  color: #eee;
+}
+.custom-paragraph {
+  font-size: 14px;
+  text-align: justify;
+  color: gray;
 }

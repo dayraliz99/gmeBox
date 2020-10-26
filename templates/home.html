@@ -1,7 +1,26 @@
 {% extends 'base.html' %}
-{% load i18n static %}
-{% block title %}Gestión de Mantenimiento{% endblock %}
+{% load static %}
+{% block title %}Inicio{% endblock %}
 
 {% block content_block_wrap %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Nosotros</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-12 col-xs-12 col-md-6">
+                <p class="custom-paragraph">
+                    {{empresa.descripcion}}
+                </p>
+            </div>
+            <div class="col-sm-12 col-xs-12 col-md-6">
+                <img src="{% static 'images/empresa.png' %}" />
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
 {% endblock %}

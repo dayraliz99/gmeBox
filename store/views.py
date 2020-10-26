@@ -7,7 +7,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls import reverse
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy
@@ -17,11 +17,40 @@ from django.core.exceptions import PermissionDenied
 from people.models import Usuario
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from store.models import (Tecnico, OrdenMantenimiento, Cliente, DetalleOrden,Producto,
+from store.models import (Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Producto,
                           Empresa, RevisionTecnica, Factura, DetalleFactura, PagoFactura)
 from store.forms import (OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm, PagoFacturaForm,
                          GestionarRevisionTecnicaForm, OrdenMantenimientoConfirmarForm, FacturaForm, DetalleFacturaForm)
 
+
+class HomeView(TemplateView):
+    template_name = "home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        empresa = Empresa.objects.first()
+        context['empresa'] = empresa
+        return context
+
+
+class MisionView(TemplateView):
+    template_name = "mision.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(MisionView, self).get_context_data(**kwargs)
+        empresa = Empresa.objects.first()
+        context['empresa'] = empresa
+        return context
+
+
+class VisionView(TemplateView):
+    template_name = "vision.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(VisionView, self).get_context_data(**kwargs)
+        empresa = Empresa.objects.first()
+        context['empresa'] = empresa
+        return context
 
 class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """
@@ -991,7 +1020,7 @@ class DetalleFacturaDeleteView(DeleteView, CustomUserOnlyMixin, LoginRequiredMix
             producto = Producto.objects.get(id=detalle.producto.id)
             producto.calcular_cantidad()
             producto.cantidad = producto.cantidad + detalle.cantidad
-    
+
             producto.save()
             factura = Factura.objects.get(id=self.kwargs['invoice_id'])
             factura.subtotal = factura.subtotal - detalle.total

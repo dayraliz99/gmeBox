@@ -11,10 +11,11 @@ class DirecionAdminInline(admin.TabularInline):
 
 
 class EmpresaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'contacto', 'email', 'telefono')
+    list_display = ('nombre', 'descripcion', 'mision',
+                    'vision', 'contacto', 'email', 'telefono')
 
     fieldsets = (
-        (('Información de Empresa'), {'fields': ('nombre', 'contacto', 'email', 'telefono',
+        (('Información de Empresa'), {'fields': ('nombre', 'descripcion', 'mision', 'vision', 'contacto', 'email', 'telefono',
                                                  'celular', 'direccion')}),
     )
 
@@ -43,9 +44,11 @@ class ProductoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'cantidad', 'descripcion', 'categoria')
     search_fields = ('nombre', 'categoria')
     list_filter = ('nombre', 'categoria')
+
     def save_model(self, request, obj, form, change):
         obj.calcular_cantidad()
         obj.save()
+
 
 class RevisionTecnicaAdminInline(nested_admin.NestedTabularInline):
     model = RevisionTecnica
