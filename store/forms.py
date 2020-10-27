@@ -161,7 +161,7 @@ class DetalleFacturaForm(ModelForm):
             cantidad=forms.TextInput(
                 attrs={'class': 'form-control', "type": "number"}),
             precio_unitario=forms.TextInput(
-                attrs={'class': 'form-control', 'type': 'number'}),
+                attrs={'class': 'form-control', 'type': 'number', "step":"0.01"}),
             producto=forms.Select(attrs={'class': 'form-control'}),
         )
 
@@ -180,6 +180,6 @@ class PagoFacturaForm(ModelForm):
             fecha_pago=forms.DateInput(
                 attrs={'class': 'form-control', "type": "date"}),
             monto=forms.TextInput(
-                attrs={'class': 'form-control', 'type': 'number'}),
+                attrs={'class': 'form-control', 'type': 'number', "step":"0.01"}),
             descripcion=forms.Textarea(attrs={'class': 'form-control'}),
         )
