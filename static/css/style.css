@@ -4,14 +4,15 @@
 p {
   font-size: 12px;
   text-align: justify;
-  color: #eee;
 }
 .custom-paragraph {
   font-size: 16px;
   padding: 1rem;
+  color: black;
   text-align: justify;
 }
 .box-contact{
-  background-color: blue;
+  background-color: darkblue;
+  padding: 2rem;
   color: white;
 }

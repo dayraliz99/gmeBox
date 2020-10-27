@@ -955,6 +955,7 @@ class DetalleFacturaCreateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRe
             raise ValidationError("No ha stock del producto")
         producto.save()
         form.instance.calcular_total()
+        form.instance.impuesto= (producto.impuesto_iva * form.instance.precio_unitario) /100
         form.save()
         factura.calcular_subtotal()
         factura.calcular_impuesto()
@@ -987,6 +988,7 @@ class DetalleFacturaUpdateView(SuccessMessageMixin, CustomUserOnlyMixin, LoginRe
             raise ValidationError("No ha stock del producto")
         producto.save()
         form.instance.calcular_total()
+        form.instance.impuesto= (producto.impuesto_iva * form.instance.precio_unitario) /100
         form.save()
         factura = Factura.objects.get(id=self.kwargs['invoice_id'])
         factura.calcular_subtotal()
@@ -1019,7 +1021,6 @@ class DetalleFacturaDeleteView(DeleteView, CustomUserOnlyMixin, LoginRequiredMix
             producto = Producto.objects.get(id=detalle.producto.id)
             producto.calcular_cantidad()
             producto.cantidad = producto.cantidad + detalle.cantidad
-
             producto.save()
             factura = Factura.objects.get(id=self.kwargs['invoice_id'])
             factura.subtotal = factura.subtotal - detalle.total
