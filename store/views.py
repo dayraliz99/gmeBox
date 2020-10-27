@@ -33,24 +33,23 @@ class HomeView(TemplateView):
         return context
 
 
-class MisionView(TemplateView):
-    template_name = "mision.html"
+class GalleryView(TemplateView):
+    template_name = "gallery.html"
+
+
+class ServicioView(TemplateView):
+    template_name = "servicio.html"
+
+
+class ContactoView(TemplateView):
+    template_name = "contacto.html"
 
     def get_context_data(self, **kwargs):
-        context = super(MisionView, self).get_context_data(**kwargs)
+        context = super(ContactoView, self).get_context_data(**kwargs)
         empresa = Empresa.objects.first()
         context['empresa'] = empresa
         return context
 
-
-class VisionView(TemplateView):
-    template_name = "vision.html"
-
-    def get_context_data(self, **kwargs):
-        context = super(VisionView, self).get_context_data(**kwargs)
-        empresa = Empresa.objects.first()
-        context['empresa'] = empresa
-        return context
 
 class OrdenListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     """

@@ -24,8 +24,9 @@ urlpatterns = [
     path('admin/doc/', include('django.contrib.admindocs.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', views.HomeView.as_view(), name="home"),
-    path('mision/', views.MisionView.as_view(), name="home"),
-    path('vision/', views.VisionView.as_view(), name="home"),
+    path('servicio/', views.ServicioView.as_view(), name="servicion"),
+    path('contacto/', views.ContactoView.as_view(), name="contacto"),
+    path('gallery/', views.GalleryView.as_view(), name="gallery"),
     path('store/', include('store.urls'))
 ]
 urlpatterns += staticfiles_urlpatterns()

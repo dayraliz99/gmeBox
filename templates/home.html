@@ -4,10 +4,8 @@
 
 {% block content_block_wrap %}
 <div class="card">
-    <div class="card-header">
-        <h2 class="card-title">Nosotros</h2>
-    </div>
     <div class="card-body">
+        <div class="row"><h1>Nosotros</h1></div>
         <div class="row">
             <div class="col-sm-12 col-xs-12 col-md-6">
                 <p class="custom-paragraph">
@@ -15,9 +13,42 @@
                 </p>
             </div>
             <div class="col-sm-12 col-xs-12 col-md-6">
-                <img src="{% static 'images/empresa.png' %}" />
+                <img style="width: 300px; height: 200px;" src="{% static 'images/empresa.png' %}" />
             </div>
 
+        </div>
+        <div class="row"><h1>Misión</h1></div>
+        <div class="row">
+            <div class="col-sm-12 col-xs-12 col-md-12">
+                <p class="custom-paragraph">
+                    {{empresa.mision}}
+                </p>
+            </div>
+        </div>
+        <div class="row"><h1>Visión</h1></div>
+        <div class="row">
+            <div class="col-sm-12 col-xs-12 col-md-12">
+                <p class="custom-paragraph">
+                    {{empresa.mision}}
+                </p>
+            </div>
+        </div>
+        <div class="row"><h1>Valores</h1></div>
+        <div class="row">
+            <div class="col-sm-12 col-xs-12 col-md-12">
+                <ul>
+                    <li>Seguridad</li>
+                    <li>Orientación al cliente</li>
+                    <li>Liderazgo</li>
+                    <li>Innovación</li>
+                    <li>Honestidad</li>
+                    <li>Experiencia</li>
+                    <li>Trabajo en Equipo</li>
+                    <li>Eficiencia</li>
+                    <li>Comprometidos con los resultados</li>
+                    <li>Servicios y productos de calidad</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>

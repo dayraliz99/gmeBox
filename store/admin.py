@@ -11,8 +11,7 @@ class DirecionAdminInline(admin.TabularInline):
 
 
 class EmpresaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'descripcion', 'mision',
-                    'vision', 'contacto', 'email', 'telefono')
+    list_display = ('nombre', 'descripcion', 'contacto', 'email', 'telefono')
 
     fieldsets = (
         (('Información de Empresa'), {'fields': ('nombre', 'descripcion', 'mision', 'vision', 'contacto', 'email', 'telefono',
