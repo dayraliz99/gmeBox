@@ -11,21 +11,31 @@
         <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
         </li>
+        {% if request.user.is_authenticated is False%}
         <li class="nav-item d-none d-sm-inline-block">
             <a href="/" class="nav-link">Inicio</a>
         </li>
+        {%endif%}
+        {% if request.user.is_authenticated is False%}
         <li class="nav-item d-none d-sm-inline-block">
             <a href="/gallery" class="nav-link">Galería</a>
         </li>
+        {%endif%}
+        {% if request.user.is_authenticated is False %}
         <li class="nav-item d-none d-sm-inline-block">
             <a href="/servicio" class="nav-link">Servicio que ofrecemos</a>
         </li>
+        {%endif%}
+        {% if request.user.is_authenticated is False%}
         <li class="nav-item d-none d-sm-inline-block">
             <a href="/contacto" class="nav-link">Contacto</a>
         </li>
+        {%endif%}
+        {% if request.user.is_authenticated and request.user.is_superuser%}
         <li class="nav-item d-none d-sm-inline-block">
             <a href="/admin" class="nav-link">Admin</a>
         </li>
+        {%endif%}
         {% if request.user.is_authenticated is False%}
         <li class="nav-item d-none d-sm-inline-block">
             <a href="/accounts/login" class="nav-link">Login</a>

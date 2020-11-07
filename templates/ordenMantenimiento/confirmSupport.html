@@ -2,7 +2,7 @@
 {%endblock %} {% block content %}
 <form method="post">
   {% csrf_token %}
-  <p>Esta seguro de confirmar la órden "{{ object }}"?</p>
+  <p>Esta seguro de confirmar la órden por el monto de "{{ object.monto_servicio }}"?</p>
   <button name="confirm" class="btn btn-primary">Confirmar</button>
   <button name="cancel" class="btn btn-danger">Cancelar</button>
 </form>

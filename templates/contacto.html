@@ -3,6 +3,7 @@
 {% block title %}Inicio{% endblock %}
 
 {% block content_block_wrap %}
+
 <div class="card">
     <div class="card-header">
         <h2 class="card-title">Contacto</h2>
@@ -10,21 +11,25 @@
     <div class="card-body">
         <div class="row">
             <div class="col-md-4">
+                <h2>Dirección</h2>
                 <div class="box-contact">
                     {{empresa.direccion}}
                 </div>
             </div>
             <div class="col-md-4">
+                <h2>Teléfono</h2>
                 <div class="box-contact">
                     {{empresa.telefono}}
                 </div>
             </div>
-            <div class="col-md-4 box-contact">
+            <div class="col-md-4">
+                <h2>Correo Electrónico</h2>
                 <div class="box-contact">
                     {{empresa.email}}
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 

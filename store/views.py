@@ -17,6 +17,8 @@ from django.core.exceptions import PermissionDenied
 from people.models import Usuario
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from people import views
+from django.contrib import messages
 from store.models import (Tecnico, OrdenMantenimiento, Cliente, DetalleOrden, Producto,
                           Empresa, RevisionTecnica, Factura, DetalleFactura, PagoFactura)
 from store.forms import (OrdenMantenimientoForm, ClienteForm, DetalleOrdenForm, TecnicoForm, RevisionTecnicaForm, PagoFacturaForm,
@@ -267,6 +269,9 @@ class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     def form_valid(self, form):
         cleaned_data = form.clean()
         group = Group.objects.get(name='CLIENTE')
+        if (views.verificar(form.instance.numero_identificacion) is False):
+            messages.error(self.request, "Número de Identificación incorrecto")
+            return super().form_invalid(form)
         usuario = Usuario(nombre_de_usuario=cleaned_data.get("correo_electronico"),
                           is_staff=1, is_active=True, correo_electronico=cleaned_data.get("correo_electronico"))
         client = form.save()
@@ -296,6 +301,10 @@ class ClienteUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     def form_valid(self, form):
         cleaned_data = form.clean()
         usuario = Usuario.objects.get(persona_id=form.instance.id)
+        if (views.verificar(form.instance.numero_identificacion) is False):
+            messages.error(self.request, "Número de Identificación incorrecto")
+            return super().form_invalid(form)
+
         usuario.correo_electronico = cleaned_data.get("correo_electronico")
         usuario.nombre_de_usuario = cleaned_data.get("correo_electronico")
         usuario.password = make_password(form.instance.numero_identificacion)
@@ -367,6 +376,9 @@ class TecnicoCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     def form_valid(self, form):
         cleaned_data = form.clean()
         group = Group.objects.get(name='TECNICO')
+        if (views.verificar(form.instance.numero_identificacion) is False):
+            messages.error(self.request, "Número de Identificación incorrecto")
+            return super().form_invalid(form)
         usuario = Usuario(nombre_de_usuario=cleaned_data.get("correo_electronico"),
                           is_staff=1, is_active=True, correo_electronico=cleaned_data.get("correo_electronico"))
         tecnico = form.save()
@@ -395,6 +407,9 @@ class TecnicoUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
 
     def form_valid(self, form):
         cleaned_data = form.clean()
+        if (views.verificar(form.instance.numero_identificacion) is False):
+            messages.error(self.request, "Número de Identificación incorrecto")
+            return super().form_invalid(form)
         usuario = Usuario.objects.get(persona_id=form.instance.id)
         usuario.correo_electronico = cleaned_data.get("correo_electronico")
         usuario.nombre_de_usuario = cleaned_data.get("correo_electronico")

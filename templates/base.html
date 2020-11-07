@@ -12,12 +12,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-   
+
     {% endblock %}
 
     {% block stylesheets %}
     {% include 'adminlte/lib/_styles.html' %}
-    <link  rel="stylesheet" href="{% static 'css/style.css' %}" rel='stylesheet' >
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" rel='stylesheet'>
     {% endblock %}
 
     {% block extra_head %}{% endblock %}
@@ -30,10 +30,11 @@
         {% block nav_header %}
         {% include 'includes/nav_header.html' %}
         {% endblock %}
-
+        {% if request.user.is_authenticated %}
         {% block nav_sidebar %}
         {% include 'includes/main_sidebar.html' %}
         {% endblock %}
+        {%endif%}
 
         {% block content_wrapper %}
         <div class="content-wrapper">
@@ -59,12 +60,20 @@
             {% block content_outer %}
             <section class="content">
                 {% block messages %}
-                {% if messages %}
+                {% if messages  %}
+                {% for m in messages %}
+                {%if m.tags == "success" %}
                 <div class="alert alert-success">
-                    {% for m in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ m }}</li>
-                        {% endfor %}
+                    <li>{{ m }}</li>
                 </div>
+                {%endif%}
+                {%if m.tags == "error" %}
+                <div class="alert alert-danger">
+                    <li>{{ m }}</li>
+                </div>
+                {%endif%}
+                {% endfor %}
+
                 {% endif %}
                 {% endblock %}
 

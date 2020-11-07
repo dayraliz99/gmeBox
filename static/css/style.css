@@ -4,12 +4,22 @@
 
 .custom-paragraph {
   font-size: 16px;
-  padding: 1rem;
+  margin-left: 2rem;
   color: black;
   text-align: justify;
 }
 .box-contact{
-  background-color: darkblue;
+  background-color: rgb(49, 132, 184);
   padding: 2rem;
   color: white;
+}
+h1{
+  margin-left: 2rem;
+  padding-top: 1rem !important;
+}
+#map {
+  height: 400px;
+  /* The height is 400 pixels */
+  width: 100%;
+  /* The width is the width of the web page */
 }
