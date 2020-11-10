@@ -1,19 +1,32 @@
 .link-visited {
   color: seagreen;
 }
-
+.navbar-blue {
+  background-color: rgb(16, 76, 165);
+  font-size: 16px;
+}
+.nav-link{
+  color: white!important;
+}
 .custom-paragraph {
   font-size: 16px;
   margin-left: 2rem;
   color: black;
   text-align: justify;
 }
-.box-contact{
-  background-color: rgb(49, 132, 184);
+.box-contact {
+  background-color: rgb(16, 76, 165);
   padding: 2rem;
   color: white;
 }
-h1{
+.row-centered {
+  text-align: center;
+}
+.row-centered-icon {
+  text-align: center;
+  font-size: 32px;
+}
+h1 {
   margin-left: 2rem;
   padding-top: 1rem !important;
 }
@@ -22,4 +35,8 @@ h1{
   /* The height is 400 pixels */
   width: 100%;
   /* The width is the width of the web page */
+}
+.box-center {
+  text-align: center;
+  background-color: lightslategrey;
 }

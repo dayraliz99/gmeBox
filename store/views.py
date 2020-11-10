@@ -269,7 +269,8 @@ class ClienteCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     def form_valid(self, form):
         cleaned_data = form.clean()
         group = Group.objects.get(name='CLIENTE')
-        if (views.verificar(form.instance.numero_identificacion) is False):
+        if ((form.instance.tipo_documento_identificacion == 'DNI' or form.instance.tipo_documento_identificacion == 'RUC' )
+         and views.verificar(form.instance.numero_identificacion) is False):
             messages.error(self.request, "Número de Identificación incorrecto")
             return super().form_invalid(form)
         usuario = Usuario(nombre_de_usuario=cleaned_data.get("correo_electronico"),
@@ -301,7 +302,8 @@ class ClienteUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     def form_valid(self, form):
         cleaned_data = form.clean()
         usuario = Usuario.objects.get(persona_id=form.instance.id)
-        if (views.verificar(form.instance.numero_identificacion) is False):
+        if ((form.instance.tipo_documento_identificacion == 'DNI' or form.instance.tipo_documento_identificacion == 'RUC' )
+         and views.verificar(form.instance.numero_identificacion) is False):
             messages.error(self.request, "Número de Identificación incorrecto")
             return super().form_invalid(form)
 
@@ -376,7 +378,8 @@ class TecnicoCreateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
     def form_valid(self, form):
         cleaned_data = form.clean()
         group = Group.objects.get(name='TECNICO')
-        if (views.verificar(form.instance.numero_identificacion) is False):
+        if ((form.instance.tipo_documento_identificacion == 'DNI' or form.instance.tipo_documento_identificacion == 'RUC' )
+         and views.verificar(form.instance.numero_identificacion) is False):
             messages.error(self.request, "Número de Identificación incorrecto")
             return super().form_invalid(form)
         usuario = Usuario(nombre_de_usuario=cleaned_data.get("correo_electronico"),
@@ -407,7 +410,8 @@ class TecnicoUpdateView(SuccessMessageMixin, LoginRequiredMixin, CustomUserOnlyM
 
     def form_valid(self, form):
         cleaned_data = form.clean()
-        if (views.verificar(form.instance.numero_identificacion) is False):
+        if ((form.instance.tipo_documento_identificacion == 'DNI' or form.instance.tipo_documento_identificacion == 'RUC' )
+         and views.verificar(form.instance.numero_identificacion) is False):
             messages.error(self.request, "Número de Identificación incorrecto")
             return super().form_invalid(form)
         usuario = Usuario.objects.get(persona_id=form.instance.id)
