@@ -2,8 +2,7 @@ from django.db import models
 from people.models import Persona
 from django.urls import reverse
 from datetime import datetime
-
-
+from django.utils.html import format_html
 class Empresa(models.Model):
     """
     Institución donde se implementa el sistema, se ingresa los datos básico de la institución
@@ -29,7 +28,6 @@ class Empresa(models.Model):
 
     def __str__(self):
         return self.nombre
-
 
 class Proveedor(models.Model):
     """
@@ -138,7 +136,7 @@ class DetalleOrden(models.Model):
         ('EN_REVISION', 'En revisión'),
         ('REVISADO', 'Revisado'),
         ('CONFIRMADO', 'Confirmado'),
-        ('Arregado', 'Arreglado'),
+        ('ARREGLADO', 'Arreglado'),
         ('FINALIZADO', 'Finalizado'),
     )
     nombre_equipo = models.CharField(
@@ -192,6 +190,7 @@ class Producto(models.Model):
     """
     nombre = models.CharField(max_length=255, verbose_name='Nombre')
     cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
+    image = models.ImageField(upload_to='galley/products', null= True, default=None)
     precio = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Precio', default=0.0)
     impuesto_iva = models.DecimalField(
@@ -204,6 +203,7 @@ class Producto(models.Model):
     def __str__(self):
         return '{} Precio: {}'.format(self.nombre, self.precio)
 
+   
     def calcular_cantidad(self):
         self.cantidad = sum(
             map(lambda detalle: detalle.cantidad, self.compras.all())) - sum(

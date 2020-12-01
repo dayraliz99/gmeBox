@@ -41,6 +41,12 @@ class GalleryView(TemplateView):
 
 class ServicioView(TemplateView):
     template_name = "servicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(ServicioView, self).get_context_data(**kwargs)
+        productos = Producto.objects.all()
+        context['productos'] = productos
+        return context
 
 
 class ContactoView(TemplateView):

@@ -4,7 +4,7 @@ from people.models import Direccion
 from store.models import (Categoria, Empresa, Producto,
                           Proveedor, OrdenMantenimiento, DetalleOrden, RevisionTecnica, Compra, DetalleCompra)
 import nested_admin
-
+import admin_thumbnails
 
 class DirecionAdminInline(admin.TabularInline):
     model = Direccion
@@ -39,15 +39,16 @@ class CategoriaAdmin(admin.ModelAdmin):
     )
 
 
+@admin_thumbnails.thumbnail('image')
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'cantidad', 'descripcion', 'categoria')
+    list_display = ('nombre', 'cantidad', 'descripcion', 'categoria','image_thumbnail')
     search_fields = ('nombre', 'categoria')
     list_filter = ('nombre', 'categoria')
 
     def save_model(self, request, obj, form, change):
         obj.calcular_cantidad()
         obj.save()
-
+   
 
 class RevisionTecnicaAdminInline(nested_admin.NestedTabularInline):
     model = RevisionTecnica

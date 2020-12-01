@@ -83,5 +83,5 @@ urlpatterns = [
     path('invoices/<int:invoice_id>/payments/<int:pk>/delete',
          views.PagoFacturaDeleteView.as_view(), name='invoice-payment-delete'),
     path('invoices/<int:invoice_id>/payments/<int:pk>/download',
-         views.PagoFacturaDetailViewDownloadView.as_view(), name='invoice-payment-download'),
+         views.PagoFacturaDetailViewDownloadView.as_view(), name='invoice-payment-download')
 ]

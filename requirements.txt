@@ -8,3 +8,4 @@ docutils
 django-weasyprint
 django-environ
 gunicorn
+django-admin-thumbnails
