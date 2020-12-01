@@ -15,11 +15,11 @@
 
         {% regroup productos by categoria.nombre as productos_ordenados %}
         {% for producto in productos_ordenados %}
-        
-            <h3><b>{{ producto.grouper }}</b></h3>
-            <div class="row" >
+
+        <h3><b>{{ producto.grouper }}</b></h3>
+        <div class="row" style="padding: 2rem;">
             {% for p in producto.list %}
-            <div class="col-md-3" >
+            <div class="col-md-3">
                 <div class="thumbnail" style="padding-top: 2rem;">
                     <img width="100" height="75" src="{{ p.image.url }}">
                     <div class="caption">
@@ -34,18 +34,31 @@
         <h1>Soporte 24/7</h1>
         <p class="custom-paragraph">Soporte las 24 horas estamos contigo.</p>
         <h3>Reparación de Electrodomésticos</h3>
-        <p class="custom-paragraph">Si su artefacto se dañó, lo reparamos con repuestos 100% ORIGINALES y con servicio a domicilio. (Servicio domicilio solo en lavadoras, secadoras y refrigeradoras).</p>
+        <p class="custom-paragraph">Si su artefacto se dañó, lo reparamos con repuestos 100% ORIGINALES y con servicio a
+            domicilio. (Servicio domicilio solo en lavadoras, secadoras y refrigeradoras).</p>
         <h3>Mantenimiento de Secadoras</h3>
         <p class="custom-paragraph">Limpieza completa de secadoras (interna y externamente).</p>
+        <div class="thumbnail" style="padding: 2rem;">
+            <img src="{% static 'images/image7.png' %}" style="width: 300px; height: 200px;" />
+            <div class="caption">
+                <p></p>
+            </div>
+        </div>
         <h3>Mantenimiento de Lavadoras</h3>
         <p class="custom-paragraph">Limpieza completa de secadoras (interna y externamente).</p>
+        <div class="thumbnail" style="padding: 2rem;">
+            <img src="{% static 'images/image8.png' %}" style="width: 300px; height: 200px;" />
+            <div class="caption">
+                <p></p>
+            </div>
+        </div>
         <h1>Garantía y Calidad</h1>
         <p class="custom-paragraph">De servicios que ofrecemos a nuestros clientes.</p>
         <h3>Servicio de Mantenimiento de todo electrodoméstico</h3>
-        <div class="row">
+        <div class="row" style="padding: 2rem;">
             <div class="col-md-4">
                 <div class="thumbnail">
-                    <img src="{% static 'images/garantia1.jpg' %}" style="width: 300px; height: 200px;"  />
+                    <img src="{% static 'images/garantia1.jpg' %}" style="width: 300px; height: 200px;" />
                     <div class="caption">
                         <p></p>
                     </div>

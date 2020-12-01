@@ -206,13 +206,13 @@ class OrdenConfirm(UpdateView, LoginRequiredMixin, CustomGroupOnlyMixin):
     model = OrdenMantenimiento
     form_class = OrdenMantenimientoConfirmarForm
     template_name = 'ordenMantenimiento/confirmSupport.html'
-    success_url = reverse_lazy('orders')
+    success_url = reverse_lazy('orders-client')
     success_message = 'Órden confirmada con exito'
     groups_required = ('CLIENTE',)
 
     def post(self, request, *args, **kwargs):
         if "cancel" in request.POST:
-            url = reverse_lazy('orders')
+            url = reverse_lazy('orders-client')
             return HttpResponseRedirect(url)
         return super(OrdenConfirm, self).post(request, *args, **kwargs)
 
@@ -873,7 +873,7 @@ class FacturaDeleteView(DeleteView, LoginRequiredMixin, CustomUserOnlyMixin):
             return super(FacturaDeleteView, self).post(request, *args, **kwargs)
 
 
-class OrdenClienteListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
+class OrdenClienteListView(LoginRequiredMixin, ListView):
     """
     Permite listar las órdenes de mantenimiento por cliente
     **Context**
@@ -890,7 +890,6 @@ class OrdenClienteListView(LoginRequiredMixin, CustomUserOnlyMixin, ListView):
     context_object_name = 'ordenes'
     paginate_by = 20
     queryset = OrdenMantenimiento.objects.all()
-    permissions_required = ('view_ordenmantenimiento',)
 
     def get_queryset(self):
         new_context = self.queryset.filter(

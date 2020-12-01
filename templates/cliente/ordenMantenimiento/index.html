@@ -37,12 +37,6 @@
               {{ orden.descripcion }}
             </td>
             <td>
-              {% has_permission request.user 'change_ordenmantenimiento' as has_permission_update %}
-              {% if has_permission_update %}
-              <a href="{% url 'order-client-update' orden.id %}">
-                <i class="nav-icon text-success fa fa-edit"></i>
-              </a>
-              {%endif%}
               <a title="Imprimir Detalle" href="{% url 'order-download' orden.id %}"> <i
                   class="nav-icon text-info fa fa-print"></i> </a>
               {% if has_permission_update and orden.estado == "REVISADO" %}
