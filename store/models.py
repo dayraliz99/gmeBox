@@ -189,8 +189,8 @@ class Producto(models.Model):
     Contiene los datos de un producto que se manejan dentro de una empresa
     """
     nombre = models.CharField(max_length=255, verbose_name='Nombre')
-    cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
-    image = models.ImageField(upload_to='galley/products', null= True, default=None)
+    cantidad = models.PositiveIntegerField(verbose_name='Cantidad', default=0)
+    image = models.ImageField(upload_to='gallery/products', null= True, default=None)
     precio = models.DecimalField(
         max_digits=12, decimal_places=2, verbose_name='Precio', default=0.0)
     impuesto_iva = models.DecimalField(
